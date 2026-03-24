@@ -14,6 +14,18 @@ module.exports = async function handler(req, res) {
   const DEX_VOLUME_QUERY_ID = '6897737';
 
   async function runDuneQuery(queryId, params) {
+    const latestRes = await fetch(
+      `https://api.dune.com/api/v1/query/${queryId}/results?` + new URLSearchParams(
+        Object.entries(params).reduce((acc, [k, v]) => ({ ...acc, ['params.' + k]: v }), {})
+      ),
+      { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
+    );
+
+    if (latestRes.ok) {
+      const latest = await latestRes.json();
+      if (latest.result?.rows) return latest.result.rows;
+    }
+
     const execRes = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
       method: 'POST',
       headers: {
@@ -22,14 +34,14 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         query_parameters: params,
-        performance: 'medium',
+        performance: 'large',
       }),
     });
 
     if (!execRes.ok) throw new Error('Failed to execute query');
     const { execution_id } = await execRes.json();
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 20; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const statusRes = await fetch(
         `https://api.dune.com/api/v1/execution/${execution_id}/results`,
