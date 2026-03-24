@@ -233,7 +233,7 @@
       document.getElementById('load-bar').style.width = barProgress + '%';
       msgIndex = Math.min(msgIndex + 1, LOADING_MESSAGES.length - 1);
       document.getElementById('load-text').textContent = LOADING_MESSAGES[msgIndex];
-    }, 5000);
+    }, 1000);
   }
 
   function stopLoading() {
@@ -264,7 +264,7 @@
     try {
       const [res] = await Promise.all([
         fetch('/api/check?wallet=' + encodeURIComponent(wallet)),
-        new Promise(r => setTimeout(r, 3000))
+        new Promise(r => setTimeout(r, 5000))
       ]);
       const data = await res.json();
       stopLoading();
