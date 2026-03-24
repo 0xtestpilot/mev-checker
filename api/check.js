@@ -14,6 +14,7 @@ module.exports = async function handler(req, res) {
   const DEX_VOLUME_QUERY_ID = '6897737';
 
   async function runDuneQuery(queryId, params) {
+    // Try cached results first
     const latestRes = await fetch(
       `https://api.dune.com/api/v1/query/${queryId}/results?` + new URLSearchParams(
         Object.entries(params).reduce((acc, [k, v]) => ({ ...acc, ['params.' + k]: v }), {})
@@ -26,6 +27,7 @@ module.exports = async function handler(req, res) {
       if (latest.result?.rows) return latest.result.rows;
     }
 
+    // Fresh execution
     const execRes = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
       method: 'POST',
       headers: {
@@ -34,11 +36,16 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         query_parameters: params,
-        performance: 'large',
+        performance: 'medium',
       }),
     });
 
-    if (!execRes.ok) throw new Error('Failed to execute query');
+    if (!execRes.ok) {
+      const errBody = await execRes.text();
+      console.error(`Dune execute failed for query ${queryId}:`, execRes.status, errBody);
+      throw new Error(`Dune API error ${execRes.status}: ${errBody}`);
+    }
+
     const { execution_id } = await execRes.json();
 
     for (let i = 0; i < 20; i++) {
@@ -111,7 +118,7 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('Handler error:', err.message);
     return res.status(500).json({ error: err.message || 'Something went wrong' });
   }
 };
