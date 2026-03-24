@@ -3,202 +3,592 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MEV Checker — Have bots been eating your trades?</title>
+  <title>MEV Checker</title>
   <meta name="description" content="See how much MEV bots may have extracted from your wallet over the last 12 months." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --red: #ff3c00;
-      --red-dim: rgba(255,60,0,0.10);
-      --red-border: rgba(255,60,0,0.28);
-      --bg: #0a0a0f;
-      --border: rgba(255,255,255,0.07);
-      --text: #e8e6e0;
-      --muted: #6b6860;
-      --dim: #3d3c38;
+      --green: #c8ff00;
+      --bg: #e8e8e2;
+      --surface: #f0f0ea;
+      --black: #111110;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.22);
+      --muted: #666660;
+      --dim: #99998f;
     }
-    html, body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background-image: linear-gradient(rgba(255,60,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,60,0,0.03) 1px, transparent 1px);
-      background-size: 48px 48px; pointer-events: none; z-index: 0;
+
+    html, body {
+      background: var(--bg);
+      color: var(--black);
+      font-family: 'Space Grotesk', sans-serif;
+      height: 100vh;
+      overflow: hidden;
     }
-    .wrap { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 3.5rem 1.5rem 5rem; }
 
-    /* HEADER */
-    .eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
-    .eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--red); }
-    h1 { font-size: clamp(2.4rem, 6vw, 3.8rem); font-weight: 800; line-height: 1.0; letter-spacing: -2px; margin-bottom: 1rem; color: #f0ede6; }
-    h1 span { color: var(--red); }
-    .sub { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 2.5rem; }
+    .app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-    /* INPUT */
-    .input-row { display: flex; border: 1px solid var(--red-border); border-radius: 6px; overflow: hidden; margin-bottom: 0.75rem; }
-    #wallet-input { flex: 1; background: rgba(255,255,255,0.03); border: none; padding: 1rem 1.25rem; color: #f0ede6; font-family: 'DM Mono', monospace; font-size: 13px; outline: none; min-width: 0; }
+    /* NAV */
+    nav {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--black);
+    }
+    .nav-icon {
+      width: 28px; height: 28px;
+      background: var(--black);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-icon svg { width: 16px; height: 16px; }
+    .nav-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .nav-cta {
+      background: var(--green);
+      border: none;
+      padding: 0.45rem 1rem;
+      color: var(--black);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 4px;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* SCREENS */
+    .screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; }
+
+    /* ── SCREEN 1: INPUT ── */
+    .input-screen-inner {
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .headline {
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      margin-bottom: 0.75rem;
+    }
+    .headline em {
+      font-style: normal;
+      background: var(--green);
+      padding: 0 5px;
+    }
+
+    .tagline {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .input-wrap {
+      display: flex;
+      border: 1.5px solid var(--border-strong);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--surface);
+      margin-bottom: 0.75rem;
+    }
+    #wallet-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 0.9rem 1rem;
+      color: var(--black);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      min-width: 0;
+    }
     #wallet-input::placeholder { color: var(--dim); }
-    #check-btn { background: var(--red); border: none; padding: 1rem 1.75rem; color: #fff; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; }
-    #check-btn:hover { opacity: 0.85; }
-    #check-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .hint { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--dim); margin-bottom: 3rem; }
-    .hint button { background: none; border: none; color: var(--red); font-family: inherit; font-size: inherit; cursor: pointer; padding: 0; }
-    hr { border: none; border-top: 1px solid var(--border); margin-bottom: 2.5rem; }
+    #check-btn {
+      background: var(--black);
+      border: none;
+      padding: 0.9rem 1.5rem;
+      color: var(--green);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    #check-btn:hover { opacity: 0.8; }
+    #check-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    /* LOADING */
-    #state-loading { display: none; }
-    .load-bar-wrap { width: 100%; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
-    .load-bar-fill { height: 100%; width: 0%; background: var(--red); border-radius: 2px; transition: width 0.4s ease; }
-    .load-text { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+    .hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .hint button {
+      background: none;
+      border: none;
+      color: var(--black);
+      font-family: inherit;
+      font-size: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .hint button:hover { color: var(--muted); }
 
-    /* STATES */
-    #state-results, #state-none, #state-error { display: none; }
+    /* ── SCREEN 2: LOADING ── */
+    .loading-inner {
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .load-bar-wrap {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .load-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+    .load-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
 
-    /* BIG NUMBER */
-    .big-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
-    .big-number { font-size: clamp(3rem, 10vw, 5.5rem); font-weight: 800; letter-spacing: -3px; color: var(--red); line-height: 1; margin-bottom: 0.4rem; }
-    .big-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--dim); margin-bottom: 2.5rem; line-height: 1.7; }
+    /* ── SCREEN 3: RESULTS ── */
+    .results-inner {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
 
-    /* STATS */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 1px; }
-    .stat { background: var(--bg); padding: 1.25rem 1.5rem; }
-    .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); margin-bottom: 0.4rem; }
-    .stat-value { font-size: 1.5rem; font-weight: 800; color: #f0ede6; letter-spacing: -1px; }
-    .stat-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .back-btn {
+      background: none;
+      border: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 1.5rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .back-btn:hover { color: var(--black); }
+    .back-btn::before { content: '←'; }
 
-    /* WORST TRADE */
-    .worst-box { background: var(--red-dim); border: 1px solid var(--red-border); border-radius: 6px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; margin-top: 1px; }
-    .worst-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 0.75rem; }
-    .worst-pair { font-size: 1.1rem; font-weight: 700; color: #f0ede6; margin-bottom: 0.35rem; }
-    .worst-meta { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
-    .worst-amount { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
-    .worst-link { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--red); text-decoration: none; letter-spacing: 1px; }
+    .confirmed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--green);
+      border-radius: 4px;
+      padding: 3px 9px;
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+    }
+    .confirmed-badge::before {
+      content: '';
+      display: block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--black);
+    }
+
+    .loss-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .loss-number {
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+    .loss-number span {
+      background: var(--green);
+      padding: 0 6px;
+    }
+    .loss-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 1px;
+    }
+    .stat {
+      background: var(--surface);
+      padding: 0.9rem 1rem;
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 0.3rem;
+    }
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.5px;
+    }
+    .stat-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--dim);
+      margin-top: 2px;
+    }
+
+    .worst-box {
+      background: var(--black);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+      margin-bottom: 1px;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .worst-left { flex: 1; min-width: 0; }
+    .worst-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 0.3rem;
+    }
+    .worst-pair {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .worst-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+    }
+    .worst-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--green);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
     .worst-link:hover { text-decoration: underline; }
 
-    /* METHODOLOGY */
-    .methodology { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 2rem; }
-    .methodology p { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--dim); line-height: 1.8; }
+    .methodology {
+      padding: 0.75rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 1px;
+      margin-bottom: 0.75rem;
+    }
+    .methodology p {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--dim);
+      line-height: 1.8;
+    }
+
+    .cta-strip {
+      background: var(--black);
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .cta-strip-text p { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .cta-strip-text span { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.45); }
+    .cta-strip-btn {
+      background: var(--green);
+      border: none;
+      padding: 0.55rem 1.1rem;
+      color: var(--black);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 4px;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .cta-strip-btn:hover { opacity: 0.85; }
 
     /* NONE STATE */
-    .none-wrap { text-align: center; padding: 2rem 0; }
-    .none-icon { font-size: 2rem; margin-bottom: 1rem; color: var(--muted); }
-    .none-title { font-size: 1.3rem; font-weight: 700; color: #f0ede6; margin-bottom: 0.5rem; }
-    .none-sub { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 2rem; line-height: 1.7; }
+    .none-inner {
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+    .none-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .none-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .none-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+    .none-back {
+      background: none;
+      border: 1.5px solid var(--border-strong);
+      padding: 0.6rem 1.25rem;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .none-back:hover { background: var(--surface); }
 
-    /* ERROR */
-    .error-box { background: rgba(255,60,0,0.06); border: 1px solid var(--red-border); border-radius: 6px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
-    .error-box p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--red); }
+    /* ERROR STATE */
+    .error-inner {
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+    .error-box {
+      background: #fff0f0;
+      border: 1px solid #ffcccc;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .error-box p {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: #cc0000;
+    }
+    .error-back {
+      background: none;
+      border: 1.5px solid var(--border-strong);
+      padding: 0.6rem 1.25rem;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .error-back:hover { background: var(--surface); }
 
-    /* CTA */
-    .cta-box { background: var(--red-dim); border: 1px solid var(--red-border); border-radius: 6px; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-    .cta-text p { font-size: 14px; font-weight: 700; color: #f0ede6; margin-bottom: 3px; }
-    .cta-text span { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-    .cta-btn { background: var(--red); border: none; padding: 0.75rem 1.5rem; color: #fff; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 4px; white-space: nowrap; text-decoration: none; display: inline-block; }
-    .cta-btn:hover { opacity: 0.85; }
-
-    /* CONFIRMED BADGE */
-    .confirmed-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--red); background: var(--red-dim); border: 1px solid var(--red-border); border-radius: 4px; padding: 4px 10px; margin-bottom: 2rem; }
-    .confirmed-badge::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
-
-    @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: 1fr; }
-      .cta-box { flex-direction: column; align-items: flex-start; }
-      #check-btn { padding: 1rem; font-size: 11px; }
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .headline { font-size: 1.9rem; }
+      nav { padding: 0 1rem; }
+      .screen { padding: 1.25rem; }
     }
   </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
 
-  <div class="eyebrow">MEV Checker</div>
-  <h1>Bots have been<br><span>eating your trades.</span><br>See how much.</h1>
-  <p class="sub">// paste your ethereum wallet address.<br>// no signup. no wallet connect. results in ~20 seconds.</p>
-
-  <div class="input-row">
-    <input id="wallet-input" type="text" placeholder="0x..." autocomplete="off" spellcheck="false" />
-    <button id="check-btn" onclick="runCheck()">Check →</button>
-  </div>
-  <p class="hint">try an example: <button onclick="loadExample()">vitalik.eth</button></p>
-  <hr />
-
-  <!-- LOADING -->
-  <div id="state-loading">
-    <div class="load-bar-wrap"><div class="load-bar-fill" id="load-bar"></div></div>
-    <p class="load-text" id="load-text">// scanning 12 months of onchain data...</p>
-  </div>
-
-  <!-- ERROR -->
-  <div id="state-error">
-    <div class="error-box"><p id="error-msg">Something went wrong. Please try again.</p></div>
-  </div>
-
-  <!-- MAIN RESULTS -->
-  <div id="state-results">
-
-    <div id="confirmed-badge" class="confirmed-badge" style="display:none;">sandwich attacks confirmed</div>
-
-    <p class="big-label">// estimated mev losses — last 12 months</p>
-    <div class="big-number" id="result-loss">$0</div>
-    <p class="big-sub" id="result-sub"></p>
-
-    <div class="stats-grid">
-      <div class="stat">
-        <p class="stat-label">dex trades</p>
-        <div class="stat-value" id="stat-trades">0</div>
-        <p class="stat-sub">last 12 months</p>
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="https://privana.xyz" target="_blank" rel="noopener">
+      <div class="nav-icon">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1.5" y="1.5" width="13" height="13" rx="2" stroke="#c8ff00" stroke-width="1.5" fill="none"/>
+          <line x1="1.5" y1="14.5" x2="14.5" y2="1.5" stroke="#c8ff00" stroke-width="1.5"/>
+        </svg>
       </div>
-      <div class="stat">
-        <p class="stat-label">dex volume</p>
-        <div class="stat-value" id="stat-volume">$0</div>
-        <p class="stat-sub">multichain evm</p>
-      </div>
-      <div class="stat">
-        <p class="stat-label">sandwich incidents</p>
-        <div class="stat-value" id="stat-incidents">—</div>
-        <p class="stat-sub" id="stat-incidents-sub">confirmed onchain</p>
-      </div>
-      <div class="stat">
-        <p class="stat-label">volume sandwiched</p>
-        <div class="stat-value" id="stat-sandwich-vol">—</div>
-        <p class="stat-sub">highest exposure trades</p>
-      </div>
-    </div>
+    </a>
+    <div class="nav-eyebrow">MEV Checker</div>
+    <div></div>
+  </nav>
 
-    <div id="worst-box" class="worst-box" style="display:none;">
-      <p class="worst-label">// largest trade exposed to sandwich attack</p>
-      <p class="worst-pair" id="worst-pair">—</p>
-      <div class="worst-meta">
-        <span class="worst-amount" id="worst-amount">—</span>
-        <a class="worst-link" id="worst-link" href="#" target="_blank" rel="noopener">view on explorer →</a>
+  <!-- SCREEN 1: INPUT -->
+  <div class="screen active" id="screen-input">
+    <div class="input-screen-inner">
+      <h1 class="headline">Bots have been<br><em>eating your trades.</em><br>See how much.</h1>
+      <p class="tagline">// no signup. no wallet connect. results in ~20 seconds.</p>
+      <div class="input-wrap">
+        <input id="wallet-input" type="text" placeholder="paste your wallet address — 0x..." autocomplete="off" spellcheck="false" />
+        <button id="check-btn" onclick="runCheck()">Check →</button>
       </div>
-    </div>
-
-    <div class="methodology">
-      <p id="methodology-text"></p>
-    </div>
-
-    <div class="cta-box">
-      <div class="cta-text">
-        <p>Stop losing to MEV bots.</p>
-        <span>Privana routes your trades through private mempools.</span>
-      </div>
-      <a class="cta-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+      <p class="hint">
+        try: <button onclick="loadExample('vitalik')">vitalik.eth</button>
+        &nbsp;·&nbsp;
+        <button onclick="loadExample('hayden')">hayden.eth</button>
+      </p>
     </div>
   </div>
 
-  <!-- NO DEX HISTORY -->
-  <div id="state-none">
-    <div class="none-wrap">
-      <div class="none-icon">◎</div>
-      <p class="none-title">No DEX trading activity found.</p>
-      <p class="none-sub">// no dex trades detected in the last 12 months<br>// across ethereum, arbitrum, base or polygon.</p>
-      <div class="cta-box" style="text-align:left;">
-        <div class="cta-text">
-          <p>When you do trade, trade safely.</p>
-          <span>Privana protects every swap from MEV bots by default.</span>
+  <!-- SCREEN 2: LOADING -->
+  <div class="screen" id="screen-loading">
+    <div class="loading-inner">
+      <div class="load-bar-wrap"><div class="load-bar-fill" id="load-bar"></div></div>
+      <p class="load-text" id="load-text">// scanning 12 months of onchain data...</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: RESULTS -->
+  <div class="screen" id="screen-results">
+    <div class="results-inner">
+      <button class="back-btn" onclick="goBack()">Back</button>
+
+      <div id="confirmed-badge" class="confirmed-badge" style="display:none;">sandwich attacks confirmed</div>
+
+      <p class="loss-label">// estimated mev losses — last 12 months</p>
+      <div class="loss-number"><span id="result-loss">$0</span></div>
+      <p class="loss-sub" id="result-sub"></p>
+
+      <div class="stats-row">
+        <div class="stat">
+          <p class="stat-label">dex trades</p>
+          <div class="stat-value" id="stat-trades">0</div>
+          <p class="stat-sub">12 months</p>
         </div>
-        <a class="cta-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+        <div class="stat">
+          <p class="stat-label">dex volume</p>
+          <div class="stat-value" id="stat-volume">$0</div>
+          <p class="stat-sub">multichain</p>
+        </div>
+        <div class="stat">
+          <p class="stat-label">sandwiches</p>
+          <div class="stat-value" id="stat-incidents">0</div>
+          <p class="stat-sub" id="stat-incidents-sub">confirmed</p>
+        </div>
+        <div class="stat">
+          <p class="stat-label">vol. sandwiched</p>
+          <div class="stat-value" id="stat-sandwich-vol">$0</div>
+          <p class="stat-sub">exposed</p>
+        </div>
       </div>
+
+      <div id="worst-box" class="worst-box" style="display:none;">
+        <div class="worst-left">
+          <p class="worst-label">// largest trade exposed</p>
+          <p class="worst-pair" id="worst-pair">—</p>
+          <p class="worst-amount" id="worst-amount">—</p>
+        </div>
+        <a class="worst-link" id="worst-link" href="#" target="_blank" rel="noopener">view →</a>
+      </div>
+
+      <div class="methodology">
+        <p id="methodology-text"></p>
+      </div>
+
+      <div class="cta-strip">
+        <div class="cta-strip-text">
+          <p>Stop losing to MEV bots.</p>
+          <span>Privana routes your trades through private mempools.</span>
+        </div>
+        <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: NONE -->
+  <div class="screen" id="screen-none">
+    <div class="none-inner">
+      <div class="none-icon">◎</div>
+      <p class="none-title">No DEX activity found.</p>
+      <p class="none-sub">// no trades detected in the last 12 months<br>// across ethereum, arbitrum, base or polygon.</p>
+      <button class="none-back" onclick="goBack()">← Check another wallet</button>
+      <div class="cta-strip">
+        <div class="cta-strip-text">
+          <p>When you trade, trade safely.</p>
+          <span>Privana protects every swap from MEV bots.</span>
+        </div>
+        <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: ERROR -->
+  <div class="screen" id="screen-error">
+    <div class="error-inner">
+      <div class="error-box"><p id="error-msg">Something went wrong. Please try again.</p></div>
+      <button class="error-back" onclick="goBack()">← Try again</button>
     </div>
   </div>
 
@@ -213,23 +603,31 @@
     '// almost there...',
   ];
 
+  const EXAMPLES = {
+    vitalik: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    hayden: '0x50EC05ADe8280758E2077fcBC08D878D4aef79C3',
+  };
+
   let loadInterval, msgIndex = 0, barProgress = 0;
 
-  function setState(s) {
-    ['loading','error','results','none'].forEach(id => {
-      document.getElementById('state-' + id).style.display = 'none';
-    });
-    if (s) document.getElementById('state-' + s).style.display = 'block';
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+  }
+
+  function goBack() {
+    showScreen('input');
+    document.getElementById('wallet-input').focus();
   }
 
   function startLoading() {
-    setState('loading');
+    showScreen('loading');
     document.getElementById('check-btn').disabled = true;
     barProgress = 0; msgIndex = 0;
     document.getElementById('load-bar').style.width = '0%';
     document.getElementById('load-text').textContent = LOADING_MESSAGES[0];
     loadInterval = setInterval(() => {
-      barProgress = Math.min(barProgress + (Math.random() * 3), 88);
+      barProgress = Math.min(barProgress + Math.random() * 10 + 4, 88);
       document.getElementById('load-bar').style.width = barProgress + '%';
       msgIndex = Math.min(msgIndex + 1, LOADING_MESSAGES.length - 1);
       document.getElementById('load-text').textContent = LOADING_MESSAGES[msgIndex];
@@ -243,7 +641,7 @@
   }
 
   function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-  function formatDate(s) { return s ? s.slice(0, 10) : ''; }
+  function fmtDate(s) { return s ? s.slice(0, 10) : ''; }
 
   function explorerUrl(txHash, blockchain) {
     const bases = { ethereum: 'https://etherscan.io/tx/', arbitrum: 'https://arbiscan.io/tx/', base: 'https://basescan.org/tx/', polygon: 'https://polygonscan.com/tx/' };
@@ -254,8 +652,8 @@
     const wallet = document.getElementById('wallet-input').value.trim();
     if (!wallet) return;
     if (!/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
-      document.getElementById('error-msg').textContent = '// invalid ethereum address. must start with 0x and be 42 characters.';
-      setState('error');
+      document.getElementById('error-msg').textContent = '// invalid address — must start with 0x and be 42 characters.';
+      showScreen('error');
       return;
     }
 
@@ -271,68 +669,57 @@
       if (!res.ok) throw new Error(data.error || 'API error');
 
       if (data.type === 'none') {
-        setState('none');
+        showScreen('none');
         return;
       }
 
-      // Populate big number
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
-
-      // Stats
       document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
       document.getElementById('stat-volume').textContent = fmt(data.dexVolume);
 
       if (data.incidents > 0) {
-        // Show confirmed badge
         document.getElementById('confirmed-badge').style.display = 'inline-flex';
         document.getElementById('stat-incidents').textContent = data.incidents;
         document.getElementById('stat-sandwich-vol').textContent = fmt(data.sandwichVolume);
-
         const chainLabel = data.chains && data.chains.length ? ' on ' + data.chains.join(', ') : '';
         document.getElementById('result-sub').textContent =
-          'based on ' + fmt(data.dexVolume) + ' dex volume × 1% estimated mev rate · ' +
-          data.incidents + ' sandwich attack' + (data.incidents !== 1 ? 's' : '') + ' confirmed' + chainLabel;
-
+          fmt(data.dexVolume) + ' dex volume × 1% mev rate · ' +
+          data.incidents + ' sandwich' + (data.incidents !== 1 ? 'es' : '') + ' confirmed' + chainLabel;
         document.getElementById('methodology-text').textContent =
-          'estimated loss = total dex volume × 1% (conservative industry estimate of mev exposure for active dex traders). ' +
-          data.incidents + ' sandwich attack' + (data.incidents !== 1 ? 's' : '') + ' confirmed via dune analytics dex.sandwiched' + chainLabel + '. ' +
-          'sandwich volume and incidents are real onchain data. total loss figure is an estimate — actual losses vary by trade size, pool liquidity and slippage settings.';
-
+          'estimated loss = total dex volume × 1%. ' + data.incidents +
+          ' sandwich attack' + (data.incidents !== 1 ? 's' : '') +
+          ' confirmed via dune analytics dex.sandwiched' + chainLabel +
+          '. sandwich incidents are real onchain data. total figure is an estimate.';
         if (data.worstTrade) {
           const w = data.worstTrade;
           document.getElementById('worst-pair').textContent = w.tokenSold + ' → ' + w.tokenBought;
-          document.getElementById('worst-amount').textContent = fmt(w.amountUsd) + ' sandwiched · ' + formatDate(w.blockTime);
+          document.getElementById('worst-amount').textContent = fmt(w.amountUsd) + ' · ' + fmtDate(w.blockTime);
           document.getElementById('worst-link').href = explorerUrl(w.txHash, w.blockchain);
-          document.getElementById('worst-box').style.display = 'block';
+          document.getElementById('worst-box').style.display = 'flex';
         }
       } else {
-        // Exposure only
         document.getElementById('confirmed-badge').style.display = 'none';
         document.getElementById('stat-incidents').textContent = '0';
-        document.getElementById('stat-incidents-sub').textContent = 'none detected';
+        document.getElementById('stat-incidents-sub').textContent = 'none found';
         document.getElementById('stat-sandwich-vol').textContent = '$0';
         document.getElementById('worst-box').style.display = 'none';
-
         document.getElementById('result-sub').textContent =
-          'based on ' + fmt(data.dexVolume) + ' dex volume × 1% estimated mev rate · no confirmed sandwich incidents detected';
-
+          fmt(data.dexVolume) + ' dex volume × 1% mev rate · no confirmed sandwiches';
         document.getElementById('methodology-text').textContent =
-          'estimated loss = total dex volume × 1% (conservative industry estimate of mev exposure for active dex traders). ' +
-          'no confirmed sandwich attacks found in dune analytics dex.sandwiched across ethereum, arbitrum, base and polygon. ' +
-          'absence of confirmed incidents does not guarantee you were unaffected — some attacks may not be fully indexed. figure is an estimate only.';
+          'estimated loss = total dex volume × 1%. no confirmed sandwich attacks found via dune analytics dex.sandwiched across ethereum, arbitrum, base and polygon. figure is a statistical estimate only.';
       }
 
-      setState('results');
+      showScreen('results');
 
     } catch (err) {
       stopLoading();
       document.getElementById('error-msg').textContent = '// ' + (err.message || 'something went wrong. please try again.');
-      setState('error');
+      showScreen('error');
     }
   }
 
-  function loadExample() {
-    document.getElementById('wallet-input').value = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+  function loadExample(name) {
+    document.getElementById('wallet-input').value = EXAMPLES[name];
     runCheck();
   }
 
