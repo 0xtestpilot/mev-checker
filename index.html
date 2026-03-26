@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MEV Checker</title>
   <meta name="description" content="See how much MEV bots may have extracted from your wallet over the last 12 months." />
+  <meta property="og:title" content="MEV Checker" />
+  <meta property="og:description" content="See how much MEV bots stole from your wallet." />
+  <meta property="og:image" id="og-image" content="https://mev-checker.vercel.app/api/card" />
+  <meta property="og:url" content="https://mev-checker.vercel.app" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" id="twitter-image" content="https://mev-checker.vercel.app/api/card" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -617,7 +623,17 @@
 
       // CT-degen share copy
       const shareText = 'MEV bots got ' + fmt(data.estimatedLoss) + ' from my wallet last year.\n\nCheck yours → mev-checker.vercel.app';
-      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText);
+      const cardParams = new URLSearchParams({
+        loss: fmt(data.estimatedLoss),
+        trades: data.dexTrades,
+        volume: fmt(data.dexVolume),
+        incidents: data.incidents,
+        sandwichVol: fmt(data.sandwichVolume),
+        confirmed: data.incidents > 0 ? '1' : '0',
+      });
+      const cardUrl = 'https://mev-checker.vercel.app/api/card?' + cardParams.toString();
+      const shareUrl = 'https://mev-checker.vercel.app';
+      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl);
 
       document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
       document.getElementById('stat-volume').textContent = fmt(data.dexVolume);
