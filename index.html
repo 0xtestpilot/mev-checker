@@ -622,7 +622,7 @@
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
 
       // CT-degen share copy
-      const shareText = 'MEV bots got ' + fmt(data.estimatedLoss) + ' from my wallet last year. Check how much you have lost:';
+      const shareText = 'MEV bots got ' + fmt(data.estimatedLoss) + ' from my wallet last year.';
       const shareParams = new URLSearchParams({
         loss: fmt(data.estimatedLoss),
         trades: data.dexTrades,
