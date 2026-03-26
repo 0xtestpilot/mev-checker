@@ -1,7 +1,7 @@
 module.exports = async function handler(req, res) {
   const { loss, trades, volume, incidents, sandwichVol, confirmed } = req.query;
 
-  const cardUrl = `https://mev-checker.vercel.app/api/card?loss=${encodeURIComponent(loss || '$0')}&trades=${encodeURIComponent(trades || '0')}&volume=${encodeURIComponent(volume || '$0')}&incidents=${encodeURIComponent(incidents || '0')}&sandwichVol=${encodeURIComponent(sandwichVol || '$0')}&confirmed=${confirmed || '0'}`;
+  const cardUrl = `https://mev-checker.vercel.app/api/card?loss=${encodeURIComponent(loss || '$0')}&trades=${encodeURIComponent(trades || '0')}&volume=${encodeURIComponent(volume || '$0')}&incidents=${encodeURIComponent(incidents || '0')}&sandwichVol=${encodeURIComponent(sandwichVol || '$0')}&confirmed=${confirmed || '0'}&v=3`;
 
   const title = `MEV bots may have stolen ${loss || '$0'} from my wallet`;
   const description = `${trades || '0'} DEX trades · ${volume || '$0'} total volume · ${incidents || '0'} confirmed sandwich attacks. Check how much you've lost.`;
@@ -30,6 +30,6 @@ module.exports = async function handler(req, res) {
 </html>`;
 
   res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.setHeader('Cache-Control', 'no-cache');
   res.status(200).send(html);
 };
