@@ -623,7 +623,7 @@
 
       // CT-degen share copy
       const shareText = 'MEV bots got ' + fmt(data.estimatedLoss) + ' from my wallet last year.\n\nCheck yours → mev-checker.vercel.app';
-      const cardParams = new URLSearchParams({
+      const shareParams = new URLSearchParams({
         loss: fmt(data.estimatedLoss),
         trades: data.dexTrades,
         volume: fmt(data.dexVolume),
@@ -631,8 +631,7 @@
         sandwichVol: fmt(data.sandwichVolume),
         confirmed: data.incidents > 0 ? '1' : '0',
       });
-      const cardUrl = 'https://mev-checker.vercel.app/api/card?' + cardParams.toString();
-      const shareUrl = 'https://mev-checker.vercel.app';
+      const shareUrl = 'https://mev-checker.vercel.app/api/share?' + shareParams.toString();
       document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl);
 
       document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
