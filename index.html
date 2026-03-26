@@ -35,7 +35,6 @@
       overflow: hidden;
     }
 
-    /* NAV */
     nav {
       flex-shrink: 0;
       display: flex;
@@ -44,13 +43,6 @@
       padding: 0 2rem;
       height: 56px;
       border-bottom: 1px solid var(--border);
-    }
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      color: var(--black);
     }
     .nav-icon {
       width: 28px; height: 28px;
@@ -66,22 +58,7 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-    .nav-cta {
-      background: var(--green);
-      border: none;
-      padding: 0.45rem 1rem;
-      color: var(--black);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border-radius: 4px;
-      text-decoration: none;
-      letter-spacing: 0.3px;
-    }
-    .nav-cta:hover { opacity: 0.85; }
 
-    /* SCREENS */
     .screen {
       flex: 1;
       display: none;
@@ -93,15 +70,11 @@
     }
     .screen.active { display: flex; }
 
-    /* ── SCREEN 1: INPUT ── */
+    /* INPUT SCREEN */
     .input-screen-inner {
       width: 100%;
       max-width: 540px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
     }
-
     .headline {
       font-size: clamp(2rem, 4.5vw, 3.2rem);
       font-weight: 700;
@@ -114,7 +87,6 @@
       background: var(--green);
       padding: 0 5px;
     }
-
     .tagline {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
@@ -122,7 +94,6 @@
       line-height: 1.6;
       margin-bottom: 2rem;
     }
-
     .input-wrap {
       display: flex;
       border: 1.5px solid var(--border-strong);
@@ -159,7 +130,6 @@
     }
     #check-btn:hover { opacity: 0.8; }
     #check-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
     .hint {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -178,7 +148,7 @@
     }
     .hint button:hover { color: var(--muted); }
 
-    /* ── SCREEN 2: LOADING ── */
+    /* LOADING */
     .loading-inner {
       width: 100%;
       max-width: 400px;
@@ -206,13 +176,12 @@
       letter-spacing: 1px;
     }
 
-    /* ── SCREEN 3: RESULTS ── */
+    /* RESULTS */
     .results-inner {
       width: 100%;
       max-width: 600px;
       display: flex;
       flex-direction: column;
-      gap: 0;
     }
 
     .back-btn {
@@ -223,7 +192,7 @@
       color: var(--muted);
       cursor: pointer;
       padding: 0;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
       letter-spacing: 1px;
       text-transform: uppercase;
       display: flex;
@@ -245,8 +214,9 @@
       background: var(--green);
       border-radius: 4px;
       padding: 3px 9px;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.6rem;
       font-weight: 700;
+      width: fit-content;
     }
     .confirmed-badge::before {
       content: '';
@@ -262,24 +232,30 @@
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.25rem;
     }
+
+    /* KEY FIX: loss number has green bg only on its own line, not bleeding */
     .loss-number {
+      display: block;
       font-size: clamp(2.8rem, 6vw, 4.5rem);
       font-weight: 700;
       letter-spacing: -2px;
-      line-height: 1;
-      margin-bottom: 0.4rem;
+      line-height: 1.1;
+      margin-bottom: 0.35rem;
     }
     .loss-number span {
+      display: inline-block;
       background: var(--green);
-      padding: 0 6px;
+      padding: 0 8px;
+      line-height: 1.15;
     }
+
     .loss-sub {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
       color: var(--muted);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
       line-height: 1.6;
     }
 
@@ -295,7 +271,7 @@
     }
     .stat {
       background: var(--surface);
-      padding: 0.9rem 1rem;
+      padding: 0.85rem 1rem;
     }
     .stat-label {
       font-family: 'DM Mono', monospace;
@@ -306,7 +282,7 @@
       margin-bottom: 0.3rem;
     }
     .stat-value {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--black);
       letter-spacing: -0.5px;
@@ -321,7 +297,7 @@
     .worst-box {
       background: var(--black);
       border-radius: 6px;
-      padding: 0.9rem 1rem;
+      padding: 0.85rem 1rem;
       margin-bottom: 1px;
       margin-top: 1px;
       display: flex;
@@ -363,10 +339,10 @@
     .worst-link:hover { text-decoration: underline; }
 
     .methodology {
-      padding: 0.75rem 0;
+      padding: 0.6rem 0;
       border-top: 1px solid var(--border);
       margin-top: 1px;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.6rem;
     }
     .methodology p {
       font-family: 'DM Mono', monospace;
@@ -378,7 +354,7 @@
     .cta-strip {
       background: var(--black);
       border-radius: 6px;
-      padding: 0.9rem 1rem;
+      padding: 0.85rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -389,7 +365,7 @@
     .cta-strip-btn {
       background: var(--green);
       border: none;
-      padding: 0.55rem 1.1rem;
+      padding: 0.5rem 1rem;
       color: var(--black);
       font-family: inherit;
       font-size: 11px;
@@ -401,63 +377,26 @@
       display: inline-block;
     }
     .cta-strip-btn:hover { opacity: 0.85; }
-
-    /* NONE STATE */
-    .none-inner {
-      width: 100%;
-      max-width: 480px;
-      text-align: center;
+    .share-btn {
+      background: var(--black);
+      color: var(--green);
+      border: 1px solid rgba(200,255,0,0.35);
     }
+    .share-btn:hover { opacity: 0.8; }
+
+    /* NONE */
+    .none-inner { width: 100%; max-width: 480px; text-align: center; }
     .none-icon { font-size: 2rem; margin-bottom: 1rem; }
     .none-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .none-sub {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-bottom: 1.5rem;
-    }
-    .none-back {
-      background: none;
-      border: 1.5px solid var(--border-strong);
-      padding: 0.6rem 1.25rem;
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-    }
+    .none-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+    .none-back { background: none; border: 1.5px solid var(--border-strong); padding: 0.6rem 1.25rem; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 4px; margin-bottom: 1rem; }
     .none-back:hover { background: var(--surface); }
 
-    /* ERROR STATE */
-    .error-inner {
-      width: 100%;
-      max-width: 480px;
-      text-align: center;
-    }
-    .error-box {
-      background: #fff0f0;
-      border: 1px solid #ffcccc;
-      border-radius: 6px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1rem;
-    }
-    .error-box p {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      color: #cc0000;
-    }
-    .error-back {
-      background: none;
-      border: 1.5px solid var(--border-strong);
-      padding: 0.6rem 1.25rem;
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border-radius: 4px;
-    }
+    /* ERROR */
+    .error-inner { width: 100%; max-width: 480px; text-align: center; }
+    .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .error-box p { font-family: 'DM Mono', monospace; font-size: 12px; color: #cc0000; }
+    .error-back { background: none; border: 1.5px solid var(--border-strong); padding: 0.6rem 1.25rem; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 4px; }
     .error-back:hover { background: var(--surface); }
 
     @media (max-width: 600px) {
@@ -465,22 +404,20 @@
       .headline { font-size: 1.9rem; }
       nav { padding: 0 1rem; }
       .screen { padding: 1.25rem; }
+      .cta-strip { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- NAV -->
   <nav>
-    <a class="nav-logo" href="https://privana.xyz" target="_blank" rel="noopener">
-      <div class="nav-icon">
-        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="1.5" y="1.5" width="13" height="13" rx="2" stroke="#c8ff00" stroke-width="1.5" fill="none"/>
-          <line x1="1.5" y1="14.5" x2="14.5" y2="1.5" stroke="#c8ff00" stroke-width="1.5"/>
-        </svg>
-      </div>
-    </a>
+    <div class="nav-icon">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1.5" y="1.5" width="13" height="13" rx="2" stroke="#c8ff00" stroke-width="1.5" fill="none"/>
+        <line x1="1.5" y1="14.5" x2="14.5" y2="1.5" stroke="#c8ff00" stroke-width="1.5"/>
+      </svg>
+    </div>
     <div class="nav-eyebrow">MEV Checker</div>
     <div></div>
   </nav>
@@ -517,7 +454,7 @@
 
       <div id="confirmed-badge" class="confirmed-badge" style="display:none;">sandwich attacks confirmed</div>
 
-      <p class="loss-label">// estimated mev losses — last 12 months</p>
+      <p class="loss-label">// estimated mev losses — last 1 year</p>
       <div class="loss-number"><span id="result-loss">$0</span></div>
       <p class="loss-sub" id="result-sub"></p>
 
@@ -525,7 +462,7 @@
         <div class="stat">
           <p class="stat-label">dex trades</p>
           <div class="stat-value" id="stat-trades">0</div>
-          <p class="stat-sub">12 months</p>
+          <p class="stat-sub">1 year</p>
         </div>
         <div class="stat">
           <p class="stat-label">dex volume</p>
@@ -563,7 +500,7 @@
           <span>Privana routes your trades through private mempools.</span>
         </div>
         <div style="display:flex;gap:0.5rem;flex-shrink:0;">
-          <a id="share-btn" class="cta-strip-btn" href="#" target="_blank" rel="noopener" style="background:var(--black);color:var(--green);border:1px solid rgba(200,255,0,0.4);">Share on X →</a>
+          <a id="share-btn" class="cta-strip-btn share-btn" href="#" target="_blank" rel="noopener">Share on X →</a>
           <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
         </div>
       </div>
@@ -677,7 +614,11 @@
       }
 
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
-      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('MEV bots may have stolen ' + fmt(data.estimatedLoss) + ' from my wallet over the last 12 months. Check yours 👇 mev-checker.vercel.app');
+
+      // CT-degen share copy
+      const shareText = 'MEV bots got ' + fmt(data.estimatedLoss) + ' from my wallet last year.\n\nCheck yours → mev-checker.vercel.app';
+      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText);
+
       document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
       document.getElementById('stat-volume').textContent = fmt(data.dexVolume);
 
