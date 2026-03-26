@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
     ? `${trades || '0'} DEX trades · ${volume || '$0'} total volume · ${incidents || '0'} confirmed sandwich attacks. Check how much you've lost.`
     : 'Paste your Ethereum wallet address and find out how much MEV bots have extracted from your trades in the last 12 months.';
 
-  const cardUrl = 'https://raw.githubusercontent.com/0xtestpilot/mev-checker/main/og-image.png';
+  const cardUrl = 'https://raw.githubusercontent.com/0xtestpilot/mev-checker/main/og_card_preview.png';
 
   const html = `<!DOCTYPE html>
 <html>
