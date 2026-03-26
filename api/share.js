@@ -1,10 +1,15 @@
 module.exports = async function handler(req, res) {
-  const { loss, trades, volume, incidents, sandwichVol, confirmed } = req.query;
+  const { loss, trades, volume, incidents, sandwichVol } = req.query;
 
-  const cardUrl = `https://mev-checker.vercel.app/api/card?loss=${encodeURIComponent(loss || '$0')}&trades=${encodeURIComponent(trades || '0')}&volume=${encodeURIComponent(volume || '$0')}&incidents=${encodeURIComponent(incidents || '0')}&sandwichVol=${encodeURIComponent(sandwichVol || '$0')}&confirmed=${confirmed || '0'}&v=3`;
+  const title = loss
+    ? `MEV bots may have stolen ${loss} from my wallet`
+    : 'Have MEV bots been stealing from your wallet?';
 
-  const title = `MEV bots may have stolen ${loss || '$0'} from my wallet`;
-  const description = `${trades || '0'} DEX trades · ${volume || '$0'} total volume · ${incidents || '0'} confirmed sandwich attacks. Check how much you've lost.`;
+  const description = loss
+    ? `${trades || '0'} DEX trades · ${volume || '$0'} total volume · ${incidents || '0'} confirmed sandwich attacks. Check how much you've lost.`
+    : 'Paste your Ethereum wallet address and find out how much MEV bots have extracted from your trades in the last 12 months.';
+
+  const cardUrl = 'https://mev-checker.vercel.app/og-image.png';
 
   const html = `<!DOCTYPE html>
 <html>
