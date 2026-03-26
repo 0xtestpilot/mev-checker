@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MEV Checker</title>
-  <meta name="description" content="See how much MEV bots may have extracted from your wallet over the last 12 months." />
+  <meta name="description" content="See how much MEV bots may have extracted from your wallet over the last 2 years." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -506,7 +506,7 @@
   <div class="screen" id="screen-loading">
     <div class="loading-inner">
       <div class="load-bar-wrap"><div class="load-bar-fill" id="load-bar"></div></div>
-      <p class="load-text" id="load-text">// scanning 12 months of onchain data...</p>
+      <p class="load-text" id="load-text">// scanning 2 years of onchain data...</p>
     </div>
   </div>
 
@@ -517,7 +517,7 @@
 
       <div id="confirmed-badge" class="confirmed-badge" style="display:none;">sandwich attacks confirmed</div>
 
-      <p class="loss-label">// estimated mev losses — last 12 months</p>
+      <p class="loss-label">// estimated mev losses — last 2 years</p>
       <div class="loss-number"><span id="result-loss">$0</span></div>
       <p class="loss-sub" id="result-sub"></p>
 
@@ -525,7 +525,7 @@
         <div class="stat">
           <p class="stat-label">dex trades</p>
           <div class="stat-value" id="stat-trades">0</div>
-          <p class="stat-sub">12 months</p>
+          <p class="stat-sub">2 years</p>
         </div>
         <div class="stat">
           <p class="stat-label">dex volume</p>
@@ -575,7 +575,7 @@
     <div class="none-inner">
       <div class="none-icon">◎</div>
       <p class="none-title">No DEX activity found.</p>
-      <p class="none-sub">// no trades detected in the last 12 months<br>// across ethereum, arbitrum, base or polygon.</p>
+      <p class="none-sub">// no trades detected in the last 2 years<br>// across ethereum, arbitrum, base or polygon.</p>
       <button class="none-back" onclick="goBack()">← Check another wallet</button>
       <div class="cta-strip">
         <div class="cta-strip-text">
@@ -599,7 +599,7 @@
 
 <script>
   const LOADING_MESSAGES = [
-    '// scanning 12 months of onchain data...',
+    '// scanning 2 years of onchain data...',
     '// querying sandwich attack records...',
     '// calculating dex trading volume...',
     '// estimating mev exposure...',
@@ -677,7 +677,7 @@
       }
 
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
-      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('MEV bots may have stolen ' + fmt(data.estimatedLoss) + ' from my wallet in the last 12 months. Check yours 👇 mev-checker.vercel.app');
+      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('MEV bots may have stolen ' + fmt(data.estimatedLoss) + ' from my wallet over the last 2 years. Check yours 👇 mev-checker.vercel.app');
       document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
       document.getElementById('stat-volume').textContent = fmt(data.dexVolume);
 
