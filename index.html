@@ -562,7 +562,10 @@
           <p>Stop losing to MEV bots.</p>
           <span>Privana routes your trades through private mempools.</span>
         </div>
-        <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+        <div style="display:flex;gap:0.5rem;flex-shrink:0;">
+          <a id="share-btn" class="cta-strip-btn" href="#" target="_blank" rel="noopener" style="background:var(--black);color:var(--green);border:1px solid rgba(200,255,0,0.4);">Share on X →</a>
+          <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+        </div>
       </div>
     </div>
   </div>
@@ -674,6 +677,7 @@
       }
 
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
+      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('MEV bots may have stolen ' + fmt(data.estimatedLoss) + ' from my wallet in the last 12 months. Check yours 👇 mev-checker.vercel.app');
       document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
       document.getElementById('stat-volume').textContent = fmt(data.dexVolume);
 
