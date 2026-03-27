@@ -682,10 +682,10 @@
         document.getElementById('stat-sandwich-vol').textContent = fmt(data.sandwichVolume);
         const chainLabel = data.chains && data.chains.length ? ' on ' + data.chains.join(', ') : '';
         document.getElementById('result-sub').textContent =
-          fmt(data.dexVolume) + ' dex volume × 1% mev rate · ' +
+          fmt(data.dexVolume) + ' dex volume × 1.25% mev rate · ' +
           data.incidents + ' sandwich' + (data.incidents !== 1 ? 'es' : '') + ' confirmed' + chainLabel;
         document.getElementById('methodology-text').textContent =
-          'estimated loss = total dex volume × 1%. ' + data.incidents +
+          'estimated loss = total dex volume × 1.25%. ' + data.incidents +
           ' sandwich attack' + (data.incidents !== 1 ? 's' : '') +
           ' confirmed via dune analytics dex.sandwiched' + chainLabel +
           '. sandwich incidents are real onchain data. total figure is an estimate.';
@@ -703,9 +703,9 @@
         document.getElementById('stat-sandwich-vol').textContent = '$0';
         document.getElementById('worst-box').style.display = 'none';
         document.getElementById('result-sub').textContent =
-          fmt(data.dexVolume) + ' dex volume × 1% mev rate · no confirmed sandwiches';
+          fmt(data.dexVolume) + ' dex volume × 1.25% mev rate · no confirmed sandwiches';
         document.getElementById('methodology-text').textContent =
-          'estimated loss = total dex volume × 1%. no confirmed sandwich attacks found via dune analytics dex.sandwiched across ethereum, arbitrum, base and polygon. figure is a statistical estimate only.';
+          'estimated loss = total dex volume × 1.25%. no confirmed sandwich attacks found via dune analytics dex.sandwiched across ethereum, arbitrum, base and polygon. figure is a statistical estimate only.';
       }
 
       showScreen('results');
