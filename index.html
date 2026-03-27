@@ -660,7 +660,7 @@
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
 
       // CT-degen share copy
-      const shareText = 'MEV bots got ' + fmt(data.estimatedLoss) + ' from my wallet last year.';
+      const shareText = 'I lost ' + fmt(data.estimatedLoss) + ' to MEV bots last year. Check your wallet →';
       const shareParams = new URLSearchParams({
         loss: fmt(data.estimatedLoss),
         trades: data.dexTrades,
@@ -724,35 +724,132 @@
 
   async function copyImage() {
     const btn = document.querySelector('.action-secondary');
+    btn.textContent = 'Copying...';
+
     const loss = document.getElementById('result-loss').textContent;
     const trades = document.getElementById('stat-trades').textContent;
     const volume = document.getElementById('stat-volume').textContent;
     const incidents = document.getElementById('stat-incidents').textContent;
     const sandwichVol = document.getElementById('stat-sandwich-vol').textContent;
+    const confirmed = document.getElementById('confirmed-badge').style.display !== 'none';
 
+    const W = 1200, H = 630;
     const canvas = document.createElement('canvas');
-    canvas.width = 1200; canvas.height = 630;
+    canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = async function() {
-      ctx.drawImage(img, 0, 0);
-      // Overlay the numbers
-      ctx.font = 'bold 110px Courier New';
+
+    // Background
+    ctx.fillStyle = '#e8e8e2';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 14; i++) { ctx.beginPath(); ctx.moveTo(0,i*48); ctx.lineTo(W,i*48); ctx.stroke(); }
+    for (let i = 0; i < 26; i++) { ctx.beginPath(); ctx.moveTo(i*48,0); ctx.lineTo(i*48,H); ctx.stroke(); }
+
+    // Nav
+    ctx.fillStyle = '#e8e8e2';
+    ctx.fillRect(0, 0, W, 60);
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0,60); ctx.lineTo(W,60); ctx.stroke();
+
+    // Nav icon
+    ctx.fillStyle = '#111110';
+    ctx.beginPath(); roundRect(ctx,48,14,32,32,5); ctx.fill();
+    ctx.strokeStyle = '#c8ff00'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(52,18,24,24);
+    ctx.beginPath(); ctx.moveTo(52,42); ctx.lineTo(76,18); ctx.stroke();
+
+    // Nav text
+    ctx.fillStyle = '#666660';
+    ctx.font = '12px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('MEV CHECKER', 600, 38);
+    ctx.fillStyle = '#99998f';
+    ctx.font = '11px Courier New';
+    ctx.textAlign = 'right';
+    ctx.fillText('mev-checker.vercel.app', 1152, 38);
+    ctx.textAlign = 'left';
+
+    let y = 84;
+
+    // Badge
+    if (confirmed) {
+      ctx.fillStyle = '#c8ff00';
+      roundRect(ctx,48,y,316,26,4); ctx.fill();
       ctx.fillStyle = '#111110';
-      ctx.fillText(loss, 56, 248);
-      try {
-        canvas.toBlob(async (blob) => {
-          await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
-          btn.textContent = 'Copied!';
-          setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
-        }, 'image/png');
-      } catch(e) {
-        btn.textContent = 'Not supported';
+      ctx.beginPath(); ctx.arc(64,y+13,4,0,Math.PI*2); ctx.fill();
+      ctx.font = 'bold 11px Courier New';
+      ctx.fillText('SANDWICH ATTACKS CONFIRMED', 76, y+18);
+      y += 40;
+    }
+
+    // Label
+    ctx.fillStyle = '#666660';
+    ctx.font = '12px Courier New';
+    ctx.fillText('// ESTIMATED MEV LOSSES — LAST 1 YEAR', 48, y+20);
+    y += 30;
+
+    // Big number bg
+    const numW = Math.min(loss.length * 72 + 24, 980);
+    ctx.fillStyle = '#c8ff00';
+    ctx.fillRect(44, y, numW, 136);
+    ctx.fillStyle = '#111110';
+    ctx.font = 'bold 120px Courier New';
+    ctx.fillText(loss, 56, y+116);
+    y += 150;
+
+    // Stats
+    const cols = [
+      ['DEX TRADES', trades, '1 year'],
+      ['DEX VOLUME', volume, 'multichain'],
+      ['SANDWICHES', incidents, confirmed ? 'confirmed' : 'none found'],
+      ['VOL. SANDWICHED', sandwichVol, 'exposed'],
+    ];
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    roundRect(ctx,48,y,1104,96,6); ctx.fill();
+    cols.forEach(([label,val,sub],i) => {
+      const x = 48 + i*276 + 1;
+      ctx.fillStyle = '#f0f0ea';
+      ctx.fillRect(x, y+1, 274, 94);
+      if (i > 0) { ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+96); ctx.stroke(); }
+      ctx.fillStyle = '#99998f'; ctx.font = '10px Courier New'; ctx.fillText(label, x+20, y+22);
+      ctx.fillStyle = '#111110'; ctx.font = 'bold 24px Courier New'; ctx.fillText(val, x+20, y+56);
+      ctx.fillStyle = '#99998f'; ctx.font = '10px Courier New'; ctx.fillText(sub, x+20, y+76);
+    });
+    y += 104;
+
+    // CTA
+    ctx.fillStyle = '#111110';
+    roundRect(ctx,48,y,1104,52,6); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Courier New';
+    ctx.fillText('Stop losing to MEV bots.', 72, y+22);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '11px Courier New';
+    ctx.fillText('Privana routes your trades through private mempools.', 72, y+40);
+    ctx.fillStyle = '#c8ff00';
+    roundRect(ctx,1002,y+10,134,32,4); ctx.fill();
+    ctx.fillStyle = '#111110'; ctx.font = 'bold 12px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('Try Privana', 1069, y+31);
+
+    function roundRect(c,x,y,w,h,r) {
+      c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+w-r,y); c.quadraticCurveTo(x+w,y,x+w,y+r);
+      c.lineTo(x+w,y+h-r); c.quadraticCurveTo(x+w,y+h,x+w-r,y+h); c.lineTo(x+r,y+h);
+      c.quadraticCurveTo(x,y+h,x,y+h-r); c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y); c.closePath();
+    }
+
+    try {
+      canvas.toBlob(async (blob) => {
+        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+        btn.textContent = 'Copied!';
         setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
-      }
-    };
-    img.src = 'https://raw.githubusercontent.com/0xtestpilot/mev-checker/main/og_card_preview.png';
+      }, 'image/png');
+    } catch(e) {
+      btn.textContent = 'Not supported';
+      setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
+    }
   }
 
   document.getElementById('wallet-input').addEventListener('keydown', e => {
