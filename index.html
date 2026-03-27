@@ -660,7 +660,7 @@
       document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
 
       // CT-degen share copy
-      const shareText = 'I lost ' + fmt(data.estimatedLoss) + ' to MEV bots last year. Check your wallet ↓';
+      const shareText = 'I lost ' + fmt(data.estimatedLoss) + ' to MEV bots last year.\n\nCheck your wallet ↓';
       const shareParams = new URLSearchParams({
         loss: fmt(data.estimatedLoss),
         trades: data.dexTrades,
