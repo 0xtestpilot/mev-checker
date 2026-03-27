@@ -13,64 +13,35 @@ module.exports = async function handler(req, res) {
   const SANDWICH_QUERY_ID = '6891371';
   const DEX_VOLUME_QUERY_ID = '6897737';
 
-  async function runDuneQuery(queryId, params) {
-    // Try cached results first
-    const latestRes = await fetch(
-      `https://api.dune.com/api/v1/query/${queryId}/results?` + new URLSearchParams(
+  async function getLatestResults(queryId, params) {
+    const url = `https://api.dune.com/api/v1/query/${queryId}/results?` +
+      new URLSearchParams(
         Object.entries(params).reduce((acc, [k, v]) => ({ ...acc, ['params.' + k]: v }), {})
-      ),
-      { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
-    );
+      );
 
-    if (latestRes.ok) {
-      const latest = await latestRes.json();
-      if (latest.result?.rows) return latest.result.rows;
-    }
-
-    // Fresh execution
-    const execRes = await fetch(`https://api.dune.com/api/v1/query/${queryId}/execute`, {
-      method: 'POST',
-      headers: {
-        'X-Dune-API-Key': DUNE_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query_parameters: params,
-        performance: 'medium',
-      }),
+    const response = await fetch(url, {
+      headers: { 'X-Dune-API-Key': DUNE_API_KEY }
     });
 
-    if (!execRes.ok) {
-      const errBody = await execRes.text();
-      console.error(`Dune execute failed for query ${queryId}:`, execRes.status, errBody);
-      throw new Error(`Dune API error ${execRes.status}: ${errBody}`);
+    if (!response.ok) {
+      const body = await response.text();
+      console.error(`Query ${queryId} failed:`, response.status, body);
+      return [];
     }
 
-    const { execution_id } = await execRes.json();
-
-    for (let i = 0; i < 20; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-      const statusRes = await fetch(
-        `https://api.dune.com/api/v1/execution/${execution_id}/results`,
-        { headers: { 'X-Dune-API-Key': DUNE_API_KEY } }
-      );
-      if (!statusRes.ok) continue;
-      const data = await statusRes.json();
-      if (data.state === 'QUERY_STATE_COMPLETED') return data.result?.rows || [];
-      if (data.state === 'QUERY_STATE_FAILED') throw new Error('Query failed');
-    }
-    throw new Error('Query timed out');
+    const data = await response.json();
+    return data.result?.rows || [];
   }
 
   try {
     const [sandwichRows, volumeRows] = await Promise.all([
-      runDuneQuery(SANDWICH_QUERY_ID, { wallet_address: wallet }),
-      runDuneQuery(DEX_VOLUME_QUERY_ID, { wallet_address: wallet }),
+      getLatestResults(SANDWICH_QUERY_ID, { wallet_address: wallet }),
+      getLatestResults(DEX_VOLUME_QUERY_ID, { wallet_address: wallet }),
     ]);
 
     const dexTrades = parseInt(volumeRows[0]?.trades || 0);
     const dexVolume = parseFloat(volumeRows[0]?.total_volume_usd || 0);
-    const estimatedLoss = Math.round(dexVolume * 0.01);
+    const estimatedLoss = Math.round(dexVolume * 0.0125);
 
     if (dexTrades === 0 && sandwichRows.length === 0) {
       return res.status(200).json({
