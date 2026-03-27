@@ -405,6 +405,40 @@
     .error-back { background: none; border: 1.5px solid var(--border-strong); padding: 0.6rem 1.25rem; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 4px; }
     .error-back:hover { background: var(--surface); }
 
+    .action-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 0.75rem 0;
+      text-align: center;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      display: inline-block;
+      transition: opacity 0.15s;
+    }
+    .action-btn:hover { opacity: 0.8; }
+    .action-primary { background: var(--black); color: var(--green); }
+    .action-secondary { background: var(--green); color: var(--black); }
+    .action-ghost { background: var(--surface); color: var(--black); border: 1.5px solid var(--border-strong); }
+    .cta-privana {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .cta-privana span { font-family: "DM Mono", monospace; font-size: 11px; color: var(--dim); }
+    .cta-privana a { font-family: "DM Mono", monospace; font-size: 11px; color: var(--black); text-decoration: none; font-weight: 700; }
+    .cta-privana a:hover { text-decoration: underline; }
     @media (max-width: 600px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
       .headline { font-size: 1.9rem; }
@@ -500,15 +534,14 @@
         <p id="methodology-text"></p>
       </div>
 
-      <div class="cta-strip">
-        <div class="cta-strip-text">
-          <p>Stop losing to MEV bots.</p>
-          <span>Privana routes your trades through private mempools.</span>
-        </div>
-        <div style="display:flex;gap:0.5rem;flex-shrink:0;">
-          <a id="share-btn" class="cta-strip-btn share-btn" href="#" target="_blank" rel="noopener">Share on X →</a>
-          <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
-        </div>
+      <div class="action-row">
+        <a id="share-btn" class="action-btn action-primary" href="#" target="_blank" rel="noopener">Share on X</a>
+        <button class="action-btn action-secondary" onclick="copyImage()">Copy image</button>
+        <button class="action-btn action-ghost" onclick="goBack()">Check another</button>
+      </div>
+      <div class="cta-privana">
+        <span>Stop losing to MEV bots.</span>
+        <a href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
       </div>
     </div>
   </div>
@@ -682,6 +715,39 @@
   function loadExample(name) {
     document.getElementById('wallet-input').value = EXAMPLES[name];
     runCheck();
+  }
+
+  async function copyImage() {
+    const btn = document.querySelector('.action-secondary');
+    const loss = document.getElementById('result-loss').textContent;
+    const trades = document.getElementById('stat-trades').textContent;
+    const volume = document.getElementById('stat-volume').textContent;
+    const incidents = document.getElementById('stat-incidents').textContent;
+    const sandwichVol = document.getElementById('stat-sandwich-vol').textContent;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200; canvas.height = 630;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = async function() {
+      ctx.drawImage(img, 0, 0);
+      // Overlay the numbers
+      ctx.font = 'bold 110px Courier New';
+      ctx.fillStyle = '#111110';
+      ctx.fillText(loss, 56, 248);
+      try {
+        canvas.toBlob(async (blob) => {
+          await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
+        }, 'image/png');
+      } catch(e) {
+        btn.textContent = 'Not supported';
+        setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
+      }
+    };
+    img.src = 'https://raw.githubusercontent.com/0xtestpilot/mev-checker/main/og_card_preview.png';
   }
 
   document.getElementById('wallet-input').addEventListener('keydown', e => {
