@@ -13,6 +13,8 @@ module.exports = async function handler(req, res) {
   const SANDWICH_QUERY_ID = '6891371';
 
   const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+  const ALCHEMY_ARB = `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_ARBITRUM}`;
+  const ALCHEMY_BASE_CHAIN = `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_BASE}`;
   const ALCHEMY_PRICES = `https://api.g.alchemy.com/prices/v1/${ALCHEMY_API_KEY}/tokens/by-address`;
 
   // Known DEX routers — wallet must send tokens TO these to count as a DEX trade
@@ -46,7 +48,7 @@ module.exports = async function handler(req, res) {
     return data.result?.rows || [];
   }
 
-  async function getTransfers() {
+  async function getTransfers(chainUrl) {
     const params = {
       fromBlock: '0x0',
       toBlock: 'latest',
@@ -58,7 +60,7 @@ module.exports = async function handler(req, res) {
       order: 'desc',
     };
 
-    const response = await fetch(ALCHEMY_BASE, {
+    const response = await fetch(chainUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: 1, jsonrpc: '2.0', method: 'alchemy_getAssetTransfers', params: [params] }),
@@ -76,7 +78,7 @@ module.exports = async function handler(req, res) {
     // Batch check which addresses are contracts using eth_getCode
     const contractChecks = await Promise.all(
       toAddresses.slice(0, 50).map(async (addr) => {
-        const r = await fetch(ALCHEMY_BASE, {
+        const r = await fetch(chainUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: 1, jsonrpc: '2.0', method: 'eth_getCode', params: [addr, 'latest'] }),
@@ -123,10 +125,14 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const [sandwichRows, transfers] = await Promise.all([
+    const [sandwichRows, ethTransfers, arbTransfers, baseTransfers] = await Promise.all([
       getSandwichData(),
-      getTransfers(),
+      getTransfers(ALCHEMY_BASE),
+      getTransfers(ALCHEMY_ARB),
+      getTransfers(ALCHEMY_BASE_CHAIN),
     ]);
+
+    const transfers = [...ethTransfers, ...arbTransfers, ...baseTransfers];
 
     // Filter to DEX trades in last 12 months
     // Include: transfers to known routers OR transfers to any contract
