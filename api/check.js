@@ -66,7 +66,32 @@ module.exports = async function handler(req, res) {
 
     if (!response.ok) return [];
     const data = await response.json();
-    return data.result?.transfers || [];
+
+    // Also fetch contract types to identify smart contracts vs wallets
+    const transfers = data.result?.transfers || [];
+
+    // Get unique destination addresses to check which are contracts
+    const toAddresses = [...new Set(transfers.map(t => t.to).filter(Boolean))];
+
+    // Batch check which addresses are contracts using eth_getCode
+    const contractChecks = await Promise.all(
+      toAddresses.slice(0, 50).map(async (addr) => {
+        const r = await fetch(ALCHEMY_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: 1, jsonrpc: '2.0', method: 'eth_getCode', params: [addr, 'latest'] }),
+        });
+        const d = await r.json();
+        return { addr: addr.toLowerCase(), isContract: d.result && d.result !== '0x' };
+      })
+    );
+
+    const contractSet = new Set(
+      contractChecks.filter(c => c.isContract).map(c => c.addr)
+    );
+
+    // Mark transfers where destination is a contract as DEX trades
+    return transfers.map(t => ({ ...t, _isContract: contractSet.has(t.to?.toLowerCase()) }));
   }
 
   async function getTokenPrices(contractAddresses) {
@@ -104,11 +129,13 @@ module.exports = async function handler(req, res) {
     ]);
 
     // Filter to DEX trades in last 12 months
+    // Include: transfers to known routers OR transfers to any contract
     const dexTransfers = transfers.filter(tx => {
-      if (!tx.to || !DEX_ROUTERS.has(tx.to.toLowerCase())) return false;
+      if (!tx.to) return false;
       const ts = tx.metadata?.blockTimestamp;
       if (ts && ts < oneYearAgo) return false;
-      return true;
+      // Known router OR detected contract
+      return DEX_ROUTERS.has(tx.to.toLowerCase()) || tx._isContract;
     });
 
     // Collect unique ERC20 contract addresses
