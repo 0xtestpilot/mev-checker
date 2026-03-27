@@ -412,12 +412,12 @@
     }
     .action-btn {
       flex: 1;
-      padding: 0.75rem 0;
+      padding: 0.65rem 0;
       text-align: center;
       font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
       border-radius: 6px;
       cursor: pointer;
       border: none;
@@ -433,12 +433,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.6rem 0;
-      border-top: 1px solid var(--border);
+      gap: 1rem;
+      background: var(--black);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.6rem;
     }
-    .cta-privana span { font-family: "DM Mono", monospace; font-size: 11px; color: var(--dim); }
-    .cta-privana a { font-family: "DM Mono", monospace; font-size: 11px; color: var(--black); text-decoration: none; font-weight: 700; }
-    .cta-privana a:hover { text-decoration: underline; }
+    .cta-privana span { font-family: "DM Mono", monospace; font-size: 10px; color: rgba(255,255,255,0.45); }
+    .cta-privana p { color: #fff !important; }
     @media (max-width: 600px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
       .headline { font-size: 1.9rem; }
@@ -534,14 +536,17 @@
         <p id="methodology-text"></p>
       </div>
 
+      <div class="cta-privana">
+        <div>
+          <p style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:3px;">Stop losing to MEV bots.</p>
+          <span>Privana routes your trades through private mempools.</span>
+        </div>
+        <a href="https://privana.xyz" target="_blank" rel="noopener" style="background:var(--black);color:var(--green);padding:0.5rem 1rem;border-radius:4px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">Try Privana →</a>
+      </div>
       <div class="action-row">
         <a id="share-btn" class="action-btn action-primary" href="#" target="_blank" rel="noopener">Share on X</a>
         <button class="action-btn action-secondary" onclick="copyImage()">Copy image</button>
         <button class="action-btn action-ghost" onclick="goBack()">Check another</button>
-      </div>
-      <div class="cta-privana">
-        <span>Stop losing to MEV bots.</span>
-        <a href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
       </div>
     </div>
   </div>
