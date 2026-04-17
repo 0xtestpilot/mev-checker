@@ -7,10 +7,10 @@
   <meta name="description" content="See how much MEV bots may have extracted from your wallet over the last 12 months." />
   <meta property="og:title" content="MEV Checker" />
   <meta property="og:description" content="See how much MEV bots stole from your wallet." />
-  <meta property="og:image" id="og-image" content="https://mev-checker.vercel.app/api/card" />
-  <meta property="og:url" content="https://mev-checker.vercel.app" />
+  <meta property="og:image" id="og-image" content="https://mev-checker.xyz/api/card" />
+  <meta property="og:url" content="https://mev-checker.xyz" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" id="twitter-image" content="https://mev-checker.vercel.app/api/card" />
+  <meta name="twitter:image" id="twitter-image" content="https://mev-checker.xyz/api/card" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -669,7 +669,7 @@
         sandwichVol: fmt(data.sandwichVolume),
         confirmed: data.incidents > 0 ? '1' : '0',
       });
-      const shareUrl = 'https://mev-checker.vercel.app/api/share?' + shareParams.toString();
+      const shareUrl = 'https://mev-checker.xyz/api/share?' + shareParams.toString();
       
       document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl);
 
@@ -770,7 +770,7 @@
     ctx.fillStyle = '#99998f';
     ctx.font = '11px Courier New';
     ctx.textAlign = 'right';
-    ctx.fillText('mev-checker.vercel.app', 1152, 38);
+    ctx.fillText('mev-checker.xyz', 1152, 38);
     ctx.textAlign = 'left';
 
     let y = 84;
