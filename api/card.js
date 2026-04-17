@@ -62,9 +62,10 @@ export default async function handler(req) {
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#c8ff00',
-                        fontSize: '16px',
+                        fontSize: '14px',
+                        fontWeight: 700,
                       },
-                      children: '⊘'
+                      children: 'MC'
                     }
                   },
                   {
@@ -129,7 +130,7 @@ export default async function handler(req) {
                     type: 'div',
                     props: {
                       style: { display: 'flex', fontSize: '12px', letterSpacing: '3px', color: '#666660', marginBottom: '8px' },
-                      children: '// ESTIMATED MEV LOSSES — LAST 1 YEAR'
+                      children: '// ESTIMATED MEV LOSSES - LAST 1 YEAR'
                     }
                   },
 
@@ -233,7 +234,7 @@ export default async function handler(req) {
                               fontWeight: 700,
                               color: '#111110',
                             },
-                            children: 'Try Privana →'
+                            children: 'Try Privana ->'
                           }
                         }
                       ]
