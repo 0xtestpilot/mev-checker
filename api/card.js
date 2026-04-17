@@ -13,6 +13,13 @@ export default async function handler(req) {
 
   const { ImageResponse } = await import('https://esm.sh/@vercel/og@0.6.2');
 
+  // Load fonts from Google Fonts CDN
+  const [regularFont, boldFont, monoFont] = await Promise.all([
+    fetch('https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff').then(r => r.arrayBuffer()),
+    fetch('https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa2JL7SUc.woff').then(r => r.arrayBuffer()),
+    fetch('https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPVmUsaaDhw.woff').then(r => r.arrayBuffer()),
+  ]);
+
   return new ImageResponse(
     {
       type: 'div',
@@ -23,7 +30,7 @@ export default async function handler(req) {
           background: '#e8e8e2',
           display: 'flex',
           flexDirection: 'column',
-          fontFamily: '"Courier New", monospace',
+          fontFamily: 'JetBrains Mono',
         },
         children: [
           // Nav
@@ -58,15 +65,15 @@ export default async function handler(req) {
                 {
                   type: 'div',
                   props: {
-                    style: { fontSize: '12px', letterSpacing: '3px', color: '#666660' },
+                    style: { fontSize: '12px', letterSpacing: '3px', color: '#666660', fontFamily: 'Inter' },
                     children: 'MEV CHECKER'
                   }
                 },
                 {
                   type: 'div',
                   props: {
-                    style: { fontSize: '11px', color: '#99998f' },
-                    children: 'mev-checker.vercel.app'
+                    style: { fontSize: '11px', color: '#99998f', fontFamily: 'Inter' },
+                    children: 'mev-checker.xyz'
                   }
                 },
               ]
@@ -98,7 +105,7 @@ export default async function handler(req) {
                       marginBottom: '12px',
                       width: 'fit-content',
                       fontSize: '11px',
-                      fontWeight: 'bold',
+                      fontFamily: 'Inter Bold',
                       letterSpacing: '2px',
                       color: '#111110',
                     },
@@ -110,7 +117,7 @@ export default async function handler(req) {
                 {
                   type: 'div',
                   props: {
-                    style: { fontSize: '12px', letterSpacing: '3px', color: '#666660', marginBottom: '8px' },
+                    style: { fontSize: '12px', letterSpacing: '3px', color: '#666660', marginBottom: '8px', fontFamily: 'Inter' },
                     children: '// ESTIMATED MEV LOSSES — LAST 1 YEAR'
                   }
                 },
@@ -128,7 +135,7 @@ export default async function handler(req) {
                       props: {
                         style: {
                           fontSize: '110px',
-                          fontWeight: 'bold',
+                          fontFamily: 'Inter Bold',
                           letterSpacing: '-4px',
                           lineHeight: 1,
                           color: '#111110',
@@ -170,9 +177,9 @@ export default async function handler(req) {
                           gap: '4px',
                         },
                         children: [
-                          { type: 'div', props: { style: { fontSize: '10px', letterSpacing: '1px', color: '#99998f' }, children: label } },
-                          { type: 'div', props: { style: { fontSize: '24px', fontWeight: 'bold', color: '#111110' }, children: val } },
-                          { type: 'div', props: { style: { fontSize: '10px', color: '#99998f' }, children: sub } },
+                          { type: 'div', props: { style: { fontSize: '10px', letterSpacing: '1px', color: '#99998f', fontFamily: 'Inter' }, children: label } },
+                          { type: 'div', props: { style: { fontSize: '24px', fontFamily: 'Inter Bold', color: '#111110' }, children: val } },
+                          { type: 'div', props: { style: { fontSize: '10px', color: '#99998f', fontFamily: 'Inter' }, children: sub } },
                         ]
                       }
                     }))
@@ -197,8 +204,8 @@ export default async function handler(req) {
                         props: {
                           style: { display: 'flex', flexDirection: 'column', gap: '4px' },
                           children: [
-                            { type: 'div', props: { style: { fontSize: '14px', fontWeight: 'bold', color: '#fff' }, children: 'Stop losing to MEV bots.' } },
-                            { type: 'div', props: { style: { fontSize: '11px', color: 'rgba(255,255,255,0.45)' }, children: 'Privana routes your trades through private mempools.' } },
+                            { type: 'div', props: { style: { fontSize: '14px', fontFamily: 'Inter Bold', color: '#fff' }, children: 'Stop losing to MEV bots.' } },
+                            { type: 'div', props: { style: { fontSize: '11px', color: 'rgba(255,255,255,0.45)', fontFamily: 'Inter' }, children: 'Privana routes your trades through private mempools.' } },
                           ]
                         }
                       },
@@ -210,7 +217,7 @@ export default async function handler(req) {
                             borderRadius: '4px',
                             padding: '8px 16px',
                             fontSize: '12px',
-                            fontWeight: 'bold',
+                            fontFamily: 'Inter Bold',
                             color: '#111110',
                           },
                           children: 'Try Privana →'
@@ -225,6 +232,14 @@ export default async function handler(req) {
         ]
       }
     },
-    { width: 1200, height: 630 }
+    {
+      width: 1200,
+      height: 630,
+      fonts: [
+        { name: 'Inter', data: regularFont, style: 'normal', weight: 400 },
+        { name: 'Inter Bold', data: boldFont, style: 'normal', weight: 700 },
+        { name: 'JetBrains Mono', data: monoFont, style: 'normal', weight: 400 },
+      ],
+    }
   );
 }
