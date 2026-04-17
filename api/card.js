@@ -14,7 +14,6 @@ export default async function handler(req) {
     const sandwichVol = searchParams.get('sandwichVol') || '$0';
     const confirmed = searchParams.get('confirmed') === '1';
 
-    // Fetch Inter fonts from jsdelivr
     const [regularFont, boldFont] = await Promise.all([
       fetch('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf').then(r => {
         if (!r.ok) throw new Error(`Regular font fetch failed: ${r.status}`);
@@ -97,33 +96,39 @@ export default async function handler(req) {
                   flex: 1,
                 },
                 children: [
-                  // Badge
+                  // Badge (uses flex wrapper + inline-ish child instead of fit-content)
                   confirmed ? {
                     type: 'div',
                     props: {
                       style: {
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        background: '#c8ff00',
-                        borderRadius: '4px',
-                        padding: '4px 12px',
                         marginBottom: '12px',
-                        width: 'fit-content',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        letterSpacing: '2px',
-                        color: '#111110',
                       },
-                      children: '● SANDWICH ATTACKS CONFIRMED'
+                      children: [{
+                        type: 'div',
+                        props: {
+                          style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            background: '#c8ff00',
+                            borderRadius: '4px',
+                            padding: '4px 12px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            letterSpacing: '2px',
+                            color: '#111110',
+                          },
+                          children: '● SANDWICH ATTACKS CONFIRMED'
+                        }
+                      }]
                     }
-                  } : { type: 'div', props: { style: { display: 'none' }, children: '' } },
+                  } : { type: 'div', props: { style: { display: 'flex' }, children: '' } },
 
                   // Label
                   {
                     type: 'div',
                     props: {
-                      style: { fontSize: '12px', letterSpacing: '3px', color: '#666660', marginBottom: '8px' },
+                      style: { display: 'flex', fontSize: '12px', letterSpacing: '3px', color: '#666660', marginBottom: '8px' },
                       children: '// ESTIMATED MEV LOSSES — LAST 1 YEAR'
                     }
                   },
@@ -140,6 +145,7 @@ export default async function handler(req) {
                         type: 'div',
                         props: {
                           style: {
+                            display: 'flex',
                             fontSize: '110px',
                             fontWeight: 700,
                             letterSpacing: '-4px',
@@ -183,9 +189,9 @@ export default async function handler(req) {
                             gap: '4px',
                           },
                           children: [
-                            { type: 'div', props: { style: { fontSize: '10px', letterSpacing: '1px', color: '#99998f' }, children: label } },
-                            { type: 'div', props: { style: { fontSize: '24px', fontWeight: 700, color: '#111110' }, children: val } },
-                            { type: 'div', props: { style: { fontSize: '10px', color: '#99998f' }, children: sub } },
+                            { type: 'div', props: { style: { display: 'flex', fontSize: '10px', letterSpacing: '1px', color: '#99998f' }, children: label } },
+                            { type: 'div', props: { style: { display: 'flex', fontSize: '24px', fontWeight: 700, color: '#111110' }, children: val } },
+                            { type: 'div', props: { style: { display: 'flex', fontSize: '10px', color: '#99998f' }, children: sub } },
                           ]
                         }
                       }))
@@ -210,8 +216,8 @@ export default async function handler(req) {
                           props: {
                             style: { display: 'flex', flexDirection: 'column', gap: '4px' },
                             children: [
-                              { type: 'div', props: { style: { fontSize: '14px', fontWeight: 700, color: '#fff' }, children: 'Stop losing to MEV bots.' } },
-                              { type: 'div', props: { style: { fontSize: '11px', color: 'rgba(255,255,255,0.45)' }, children: 'Privana routes your trades through private mempools.' } },
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '14px', fontWeight: 700, color: '#fff' }, children: 'Stop losing to MEV bots.' } },
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: 'rgba(255,255,255,0.45)' }, children: 'Privana routes your trades through private mempools.' } },
                             ]
                           }
                         },
@@ -219,6 +225,7 @@ export default async function handler(req) {
                           type: 'div',
                           props: {
                             style: {
+                              display: 'flex',
                               background: '#c8ff00',
                               borderRadius: '4px',
                               padding: '8px 16px',
@@ -232,7 +239,7 @@ export default async function handler(req) {
                       ]
                     }
                   }
-                ].filter(Boolean)
+                ]
               }
             }
           ]
