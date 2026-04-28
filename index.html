@@ -36,6 +36,12 @@
       overflow: hidden;
     }
 
+    @media (max-width: 600px) {
+      html, body { overflow: auto; height: auto; }
+      #app { height: auto; min-height: 100vh; }
+      .screen { min-height: calc(100vh - 120px); justify-content: flex-start; padding-top: 32px; }
+    }
+
     /* ── blinds texture overlay ── */
     body::before {
       content: '';
