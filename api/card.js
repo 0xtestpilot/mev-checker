@@ -38,7 +38,7 @@ export default async function handler(req) {
           },
           children: [
 
-            // Top strip — label + site
+            // Nav
             {
               type: 'div',
               props: {
@@ -47,109 +47,63 @@ export default async function handler(req) {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '0 56px',
-                  height: '56px',
+                  height: '60px',
                   borderBottom: '1px solid rgba(26,26,26,0.1)',
                 },
                 children: [
-                  {
-                    type: 'div',
-                    props: {
-                      style: { display: 'flex', fontSize: '13px', fontWeight: 600, color: '#1a1a1a', letterSpacing: '0px' },
-                      children: 'MEV Checker'
-                    }
-                  },
-                  {
-                    type: 'div',
-                    props: {
-                      style: { display: 'flex', fontSize: '13px', color: '#7a7570' },
-                      children: 'mev-checker.xyz'
-                    }
-                  }
+                  { type: 'div', props: { style: { display: 'flex', fontSize: '14px', fontWeight: 600, color: '#1a1a1a' }, children: 'MEV Checker' } },
+                  { type: 'div', props: { style: { display: 'flex', fontSize: '13px', color: '#7a7570' }, children: 'mev-checker.xyz' } },
                 ]
               }
             },
 
-            // Middle — big number block
+            // Main content
             {
               type: 'div',
               props: {
                 style: {
                   display: 'flex',
-                  flex: 1,
                   flexDirection: 'column',
-                  justifyContent: 'center',
-                  padding: '0 56px',
-                  gap: '0px',
+                  padding: '44px 56px 32px',
+                  flex: 1,
                 },
                 children: [
-                  // Eyebrow
-                  {
-                    type: 'div',
-                    props: {
-                      style: {
-                        display: 'flex',
-                        fontSize: '16px',
-                        color: '#7a7570',
-                        letterSpacing: '0.5px',
-                        marginBottom: '8px',
-                      },
-                      children: 'Estimated MEV loss · past 12 months'
-                    }
-                  },
 
-                  // THE NUMBER — huge, yellow highlight
+                  // Label
+                  { type: 'div', props: { style: { display: 'flex', fontSize: '13px', color: '#7a7570', letterSpacing: '0.3px', marginBottom: '14px' }, children: 'Estimated MEV loss · past 12 months' } },
+
+                  // Loss card — white, yellow left rail
                   {
                     type: 'div',
                     props: {
                       style: {
                         display: 'flex',
-                        alignItems: 'baseline',
-                        gap: '20px',
-                        marginBottom: '20px',
+                        alignItems: 'center',
+                        background: 'white',
+                        border: '1.5px solid #1a1a1a',
+                        borderLeft: '7px solid #e8c547',
+                        borderRadius: '6px',
+                        padding: '22px 32px',
+                        marginBottom: '16px',
+                        gap: '32px',
                       },
                       children: [
+                        // Big number
                         {
                           type: 'div',
                           props: {
-                            style: {
-                              display: 'flex',
-                              fontSize: '148px',
-                              fontWeight: 700,
-                              letterSpacing: '-6px',
-                              lineHeight: '1',
-                              color: '#1a1a1a',
-                              background: '#e8c547',
-                              padding: '2px 16px 6px',
-                              borderRadius: '4px',
-                            },
+                            style: { display: 'flex', fontSize: '112px', fontWeight: 700, letterSpacing: '-4px', lineHeight: '1', color: '#1a1a1a' },
                             children: loss
                           }
                         },
-                        // incidents pill
+                        // Incidents
                         {
                           type: 'div',
                           props: {
-                            style: {
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '2px',
-                              paddingBottom: '8px',
-                            },
+                            style: { display: 'flex', flexDirection: 'column', marginLeft: 'auto', alignItems: 'center', background: '#f0ede4', borderRadius: '4px', padding: '12px 24px' },
                             children: [
-                              {
-                                type: 'div',
-                                props: {
-                                  style: { display: 'flex', fontSize: '48px', fontWeight: 700, color: '#1a1a1a', letterSpacing: '-2px', lineHeight: '1' },
-                                  children: incidents
-                                }
-                              },
-                              {
-                                type: 'div',
-                                props: {
-                                  style: { display: 'flex', fontSize: '14px', color: '#7a7570', letterSpacing: '1px' },
-                                  children: 'incidents'
-                                }
-                              }
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '36px', fontWeight: 700, color: '#1a1a1a', lineHeight: '1' }, children: incidents } },
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: '#7a7570', letterSpacing: '1px', marginTop: '4px' }, children: 'incidents' } },
                             ]
                           }
                         }
@@ -157,83 +111,48 @@ export default async function handler(req) {
                     }
                   },
 
-                  // Sub stats — trades + volume inline
+                  // Stats row
                   {
                     type: 'div',
                     props: {
-                      style: {
-                        display: 'flex',
-                        gap: '32px',
-                        marginBottom: '0px',
-                      },
+                      style: { display: 'flex', gap: '12px', marginBottom: '16px' },
                       children: [
-                        {
-                          type: 'div',
-                          props: {
-                            style: { display: 'flex', gap: '6px', alignItems: 'baseline' },
-                            children: [
-                              { type: 'div', props: { style: { display: 'flex', fontSize: '22px', fontWeight: 700, color: '#1a1a1a' }, children: trades } },
-                              { type: 'div', props: { style: { display: 'flex', fontSize: '14px', color: '#7a7570' }, children: 'trades scanned' } },
-                            ]
-                          }
-                        },
-                        {
-                          type: 'div',
-                          props: {
-                            style: { display: 'flex', gap: '6px', alignItems: 'baseline' },
-                            children: [
-                              { type: 'div', props: { style: { display: 'flex', fontSize: '22px', fontWeight: 700, color: '#1a1a1a' }, children: volume } },
-                              { type: 'div', props: { style: { display: 'flex', fontSize: '14px', color: '#7a7570' }, children: 'volume · 3 chains' } },
-                            ]
-                          }
-                        },
-                      ]
+                        ['DEX trades', trades],
+                        ['Volume scanned', volume],
+                        ['MEV rate', '1.25%'],
+                      ].map(([label, val]) => ({
+                        type: 'div',
+                        props: {
+                          style: { flex: 1, background: 'white', border: '1px solid rgba(26,26,26,0.1)', borderRadius: '5px', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: '4px' },
+                          children: [
+                            { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: '#7a7570', letterSpacing: '1px' }, children: label } },
+                            { type: 'div', props: { style: { display: 'flex', fontSize: '26px', fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }, children: val } },
+                          ]
+                        }
+                      }))
                     }
                   },
-                ]
-              }
-            },
 
-            // Bottom CTA bar — full width, dark, punchy
-            {
-              type: 'div',
-              props: {
-                style: {
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: '#1a1a1a',
-                  padding: '0 56px',
-                  height: '90px',
-                },
-                children: [
+                  // CTA strip
                   {
                     type: 'div',
                     props: {
-                      style: { display: 'flex', fontSize: '26px', fontWeight: 700, color: 'white', letterSpacing: '-0.5px' },
-                      children: 'Stop losing to MEV bots.'
-                    }
-                  },
-                  {
-                    type: 'div',
-                    props: {
-                      style: {
-                        display: 'flex',
-                        background: '#e8c547',
-                        borderRadius: '6px',
-                        padding: '14px 28px',
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        color: '#1a1a1a',
-                        letterSpacing: '-0.3px',
-                      },
-                      children: 'Try Privana  privana.finance'
+                      style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1a1a1a', borderRadius: '6px', padding: '18px 28px' },
+                      children: [
+                        { type: 'div', props: { style: { display: 'flex', fontSize: '20px', fontWeight: 700, color: 'white', letterSpacing: '-0.3px' }, children: 'Stop losing to MEV bots.' } },
+                        {
+                          type: 'div',
+                          props: {
+                            style: { display: 'flex', background: '#e8c547', borderRadius: '4px', padding: '12px 22px', fontSize: '15px', fontWeight: 700, color: '#1a1a1a' },
+                            children: 'Try Privana  ->  privana.finance'
+                          }
+                        }
+                      ]
                     }
                   }
                 ]
               }
             }
-
           ]
         }
       },
