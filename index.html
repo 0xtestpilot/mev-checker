@@ -39,7 +39,8 @@
     @media (max-width: 600px) {
       html, body { overflow: auto; height: auto; }
       #app { height: auto; min-height: 100vh; }
-      .screen { min-height: calc(100vh - 120px); justify-content: flex-start; padding-top: 32px; }
+      .screen { min-height: auto; justify-content: flex-start; padding-top: 24px; padding-bottom: 40px; }
+      nav { position: sticky; top: 0; background: var(--cream); z-index: 10; }
     }
 
     /* ── blinds texture overlay ── */
@@ -674,6 +675,19 @@
       </div>
     </div>
 
+    <!-- Privana CTA -->
+    <div class="cta-strip">
+      <span class="cta-copy">Stop losing to MEV bots.</span>
+      <a class="cta-btn" href="https://privana.finance/" target="_blank" rel="noopener">Try Privana →</a>
+    </div>
+
+    <!-- share row -->
+    <div class="action-row">
+      <button class="action-btn" onclick="shareOnX()">Share on X</button>
+      <button class="action-btn" onclick="copyImage()">Copy image</button>
+      <button class="action-btn" onclick="goBack()">Check another</button>
+    </div>
+
     <!-- stats -->
     <div class="stats-row">
       <div class="stat-cell">
@@ -691,19 +705,6 @@
         <p class="stat-value" id="stat-volume">—</p>
         <p class="stat-sub">across 3 chains</p>
       </div>
-    </div>
-
-    <!-- Privana CTA -->
-    <div class="cta-strip">
-      <span class="cta-copy">Stop losing to MEV bots.</span>
-      <a class="cta-btn" href="https://privana.finance/" target="_blank" rel="noopener">Try Privana →</a>
-    </div>
-
-    <!-- share row -->
-    <div class="action-row">
-      <button class="action-btn" onclick="shareOnX()">Share on X</button>
-      <button class="action-btn" onclick="copyImage()">Copy image</button>
-      <button class="action-btn" onclick="goBack()">Check another</button>
     </div>
 
     <!-- methodology -->
