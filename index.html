@@ -3,852 +3,903 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MEV Checker</title>
+  <title>MEV Checker · by Privana</title>
   <meta name="description" content="See how much MEV bots may have extracted from your wallet over the last 12 months." />
-  <meta property="og:title" content="MEV Checker" />
+  <meta property="og:title" content="MEV Checker · by Privana" />
   <meta property="og:description" content="See how much MEV bots stole from your wallet." />
-  <meta property="og:image" id="og-image" content="https://mev-checker.xyz/api/card" />
-  <meta property="og:url" content="https://mev-checker.xyz" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" id="twitter-image" content="https://mev-checker.xyz/api/card" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #c8ff00;
-      --bg: #e8e8e2;
-      --surface: #f0f0ea;
-      --black: #111110;
-      --border: rgba(0,0,0,0.1);
-      --border-strong: rgba(0,0,0,0.22);
-      --muted: #666660;
-      --dim: #99998f;
+      --cream:     #f5f2ea;
+      --cream-dark:#ece8dc;
+      --ink:       #1a1a1a;
+      --ink-mid:   #3d3d3d;
+      --ink-light: #7a7570;
+      --yellow:    #e8c547;
+      --yellow-bg: #f5e9a0;
+      --border:    rgba(26,26,26,0.13);
+      --serif:     'Fraunces', Georgia, serif;
+      --sans:      'DM Sans', system-ui, sans-serif;
+      --mono:      'DM Mono', monospace;
     }
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     html, body {
-      background: var(--bg);
-      color: var(--black);
-      font-family: 'Space Grotesk', sans-serif;
-      height: 100vh;
+      height: 100%;
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
       overflow: hidden;
     }
 
-    .app {
+    /* ── blinds texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: repeating-linear-gradient(
+        170deg,
+        transparent 0px,
+        transparent 18px,
+        rgba(26,26,26,0.028) 18px,
+        rgba(26,26,26,0.028) 22px
+      );
+    }
+
+    /* ── layout shell ── */
+    #app {
+      position: relative;
+      z-index: 1;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
+    /* ══════════════════════════════
+       NAV
+    ══════════════════════════════ */
     nav {
-      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 2rem;
-      height: 56px;
+      padding: 18px 36px;
       border-bottom: 1px solid var(--border);
-    }
-    .nav-icon {
-      width: 28px; height: 28px;
-      background: var(--black);
-      border-radius: 5px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .nav-icon svg { width: 16px; height: 16px; }
-    .nav-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
+      flex-shrink: 0;
     }
 
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* circular blinds badge */
+    .nav-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ink);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-badge svg { width: 32px; height: 32px; }
+
+    .nav-wordmark {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .nav-title {
+      font-family: var(--serif);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+
+
+    /* ══════════════════════════════
+       SCREENS (search / loading / results)
+    ══════════════════════════════ */
     .screen {
       flex: 1;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
-      overflow: hidden;
+      padding: 32px 24px;
     }
     .screen.active { display: flex; }
 
-    /* INPUT SCREEN */
-    .input-screen-inner {
-      width: 100%;
-      max-width: 540px;
+    /* ══════════════════════════════
+       SEARCH SCREEN
+    ══════════════════════════════ */
+    #screen-search {
+      gap: 28px;
     }
-    .headline {
-      font-size: clamp(2rem, 4.5vw, 3.2rem);
-      font-weight: 700;
-      line-height: 1.05;
-      letter-spacing: -1.5px;
-      margin-bottom: 0.75rem;
+
+    .hero-headline {
+      font-family: var(--serif);
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      text-align: center;
+      color: var(--ink);
+      max-width: 640px;
     }
-    .headline em {
-      font-style: normal;
-      background: var(--green);
-      padding: 0 5px;
+
+    .hero-headline em {
+      font-style: italic;
+      color: var(--ink-mid);
     }
-    .tagline {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      color: var(--muted);
+
+    .hero-sub {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--ink-light);
+      text-align: center;
+      max-width: 420px;
       line-height: 1.6;
-      margin-bottom: 2rem;
     }
+
     .input-wrap {
       display: flex;
-      border: 1.5px solid var(--border-strong);
+      width: 100%;
+      max-width: 560px;
+      border: 1.5px solid var(--ink);
       border-radius: 6px;
       overflow: hidden;
-      background: var(--surface);
-      margin-bottom: 0.75rem;
+      background: white;
     }
-    #wallet-input {
+
+    .input-wrap input {
       flex: 1;
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--ink);
       background: transparent;
       border: none;
-      padding: 0.9rem 1rem;
-      color: var(--black);
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
       outline: none;
-      min-width: 0;
     }
-    #wallet-input::placeholder { color: var(--dim); }
-    #check-btn {
-      background: var(--black);
+    .input-wrap input::placeholder { color: var(--ink-light); }
+
+    .input-wrap button {
+      padding: 14px 22px;
+      background: var(--ink);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
       border: none;
-      padding: 0.9rem 1.5rem;
-      color: var(--green);
-      font-family: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
       cursor: pointer;
+      letter-spacing: 0.02em;
       white-space: nowrap;
       transition: opacity 0.15s;
     }
-    #check-btn:hover { opacity: 0.8; }
-    #check-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .hint {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--dim);
-    }
-    .hint button {
-      background: none;
-      border: none;
-      color: var(--black);
-      font-family: inherit;
-      font-size: inherit;
-      cursor: pointer;
-      padding: 0;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .hint button:hover { color: var(--muted); }
+    .input-wrap button:hover { opacity: 0.8; }
 
-    /* LOADING */
-    .loading-inner {
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
+    .examples {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .load-bar-wrap {
-      width: 100%;
-      height: 3px;
-      background: var(--border);
+
+    .examples span {
+      font-size: 12px;
+      color: var(--ink-light);
+      font-weight: 300;
+    }
+
+    .example-btn {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--ink-mid);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .example-btn:hover {
+      background: var(--ink);
+      color: var(--cream);
+      border-color: var(--ink);
+    }
+
+    /* ══════════════════════════════
+       LOADING SCREEN
+    ══════════════════════════════ */
+    #screen-loading {
+      gap: 24px;
+    }
+
+    .loading-label {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--ink-mid);
+    }
+
+    .scan-address {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-light);
+      letter-spacing: 0.04em;
+    }
+
+    .load-bar-track {
+      width: 320px;
+      max-width: 90vw;
+      height: 2px;
+      background: var(--cream-dark);
       border-radius: 2px;
       overflow: hidden;
-      margin-bottom: 1.25rem;
     }
+
     .load-bar-fill {
       height: 100%;
       width: 0%;
-      background: var(--green);
+      background: var(--ink);
       border-radius: 2px;
-      transition: width 0.5s ease;
-    }
-    .load-text {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 1px;
+      transition: width 0.4s ease;
     }
 
-    /* RESULTS */
-    .results-inner {
-      width: 100%;
+    .load-message {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--ink-light);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      min-height: 18px;
+    }
+
+    /* ══════════════════════════════
+       RESULTS SCREEN
+    ══════════════════════════════ */
+    #screen-results {
+      gap: 20px;
       max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .results-top {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .results-wallet {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-light);
+      letter-spacing: 0.04em;
     }
 
     .back-btn {
+      font-size: 12px;
+      color: var(--ink-light);
       background: none;
       border: none;
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
       cursor: pointer;
-      padding: 0;
-      margin-bottom: 1.25rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      padding: 4px 0;
+      font-family: var(--sans);
+      font-weight: 400;
+      transition: color 0.12s;
+    }
+    .back-btn:hover { color: var(--ink); }
+
+    /* loss card */
+    .loss-card {
+      width: 100%;
+      background: white;
+      border: 1.5px solid var(--ink);
+      border-left: 5px solid var(--yellow);
+      border-radius: 6px;
+      padding: 20px 24px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      gap: 16px;
     }
-    .back-btn:hover { color: var(--black); }
-    .back-btn::before { content: '←'; }
 
-    .confirmed-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--black);
-      background: var(--green);
-      border-radius: 4px;
-      padding: 3px 9px;
-      margin-bottom: 0.6rem;
-      font-weight: 700;
-      width: fit-content;
-    }
-    .confirmed-badge::before {
-      content: '';
-      display: block;
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--black);
-    }
+    .loss-card-left {}
 
     .loss-label {
-      font-family: 'DM Mono', monospace;
       font-size: 10px;
-      letter-spacing: 2px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.25rem;
+      color: var(--ink-light);
+      margin-bottom: 6px;
     }
 
-    /* KEY FIX: loss number has green bg only on its own line, not bleeding */
-    .loss-number {
-      display: block;
-      font-size: clamp(2.8rem, 6vw, 4.5rem);
-      font-weight: 700;
-      letter-spacing: -2px;
-      line-height: 1.1;
-      margin-bottom: 0.35rem;
-    }
-    .loss-number span {
-      display: inline-block;
-      background: var(--green);
-      padding: 0 8px;
-      line-height: 1.15;
+    .loss-amount {
+      font-family: var(--serif);
+      font-size: clamp(36px, 6vw, 52px);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      line-height: 1;
     }
 
-    .loss-sub {
-      font-family: 'DM Mono', monospace;
+    .loss-period {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink-light);
+      margin-top: 4px;
+    }
+
+    .loss-badge {
+      flex-shrink: 0;
+      background: var(--cream-dark);
+      border-radius: 4px;
+      padding: 8px 14px;
+      text-align: center;
+    }
+
+    .loss-badge-num {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .loss-badge-label {
       font-size: 10px;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      line-height: 1.6;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
-      margin-bottom: 1px;
-    }
-    .stat {
-      background: var(--surface);
-      padding: 0.85rem 1rem;
-    }
-    .stat-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 1px;
+      color: var(--ink-light);
       text-transform: uppercase;
-      color: var(--dim);
-      margin-bottom: 0.3rem;
-    }
-    .stat-value {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--black);
-      letter-spacing: -0.5px;
-    }
-    .stat-sub {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      color: var(--dim);
+      letter-spacing: 0.06em;
       margin-top: 2px;
     }
 
-    .worst-box {
-      background: var(--black);
-      border-radius: 6px;
-      padding: 0.85rem 1rem;
-      margin-bottom: 1px;
-      margin-top: 1px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
+    /* stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      width: 100%;
     }
-    .worst-left { flex: 1; min-width: 0; }
-    .worst-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 1px;
+
+    .stat-cell {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--green);
-      margin-bottom: 0.3rem;
+      color: var(--ink-light);
+      margin-bottom: 6px;
     }
-    .worst-pair {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.2rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .worst-amount {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: rgba(255,255,255,0.45);
-    }
-    .worst-link {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--green);
-      text-decoration: none;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .worst-link:hover { text-decoration: underline; }
 
+    .stat-value {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-sub {
+      font-size: 10px;
+      color: var(--ink-light);
+      margin-top: 2px;
+    }
+
+    /* methodology */
     .methodology {
-      padding: 0.6rem 0;
-      border-top: 1px solid var(--border);
-      margin-top: 1px;
-      margin-bottom: 0.6rem;
-    }
-    .methodology p {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--dim);
-      line-height: 1.8;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--ink-light);
+      text-align: center;
+      line-height: 1.5;
     }
 
+    /* ── Privana CTA strip ── */
     .cta-strip {
-      background: var(--black);
+      width: 100%;
+      background: var(--ink);
       border-radius: 6px;
-      padding: 0.85rem 1rem;
+      padding: 16px 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 16px;
     }
-    .cta-strip-text p { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-    .cta-strip-text span { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.45); }
-    .cta-strip-btn {
-      background: var(--green);
+
+    .cta-copy {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--cream);
+      letter-spacing: -0.01em;
+    }
+
+    .cta-btn {
+      flex-shrink: 0;
+      background: var(--yellow);
+      color: var(--ink);
       border: none;
-      padding: 0.5rem 1rem;
-      color: var(--black);
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
       border-radius: 4px;
-      white-space: nowrap;
+      padding: 10px 20px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
       text-decoration: none;
-      display: inline-block;
+      letter-spacing: 0.01em;
+      transition: opacity 0.15s;
+      white-space: nowrap;
     }
-    .cta-strip-btn:hover { opacity: 0.85; }
-    .share-btn {
-      background: var(--black);
-      color: var(--green);
-      border: 1px solid rgba(200,255,0,0.35);
-    }
-    .share-btn:hover { opacity: 0.8; }
+    .cta-btn:hover { opacity: 0.85; }
 
-    /* NONE */
-    .none-inner { width: 100%; max-width: 480px; text-align: center; }
-    .none-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .none-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .none-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
-    .none-back { background: none; border: 1.5px solid var(--border-strong); padding: 0.6rem 1.25rem; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 4px; margin-bottom: 1rem; }
-    .none-back:hover { background: var(--surface); }
-
-    /* ERROR */
-    .error-inner { width: 100%; max-width: 480px; text-align: center; }
-    .error-box { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
-    .error-box p { font-family: 'DM Mono', monospace; font-size: 12px; color: #cc0000; }
-    .error-back { background: none; border: 1.5px solid var(--border-strong); padding: 0.6rem 1.25rem; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 4px; }
-    .error-back:hover { background: var(--surface); }
-
+    /* action buttons row */
     .action-row {
       display: flex;
-      gap: 0.6rem;
-      margin-bottom: 0.75rem;
+      gap: 8px;
+      width: 100%;
+      flex-wrap: wrap;
     }
+
     .action-btn {
       flex: 1;
-      padding: 0.65rem 0;
-      text-align: center;
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      border-radius: 6px;
+      min-width: 100px;
+      padding: 10px 14px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--ink-mid);
       cursor: pointer;
-      border: none;
-      text-decoration: none;
-      display: inline-block;
-      transition: opacity 0.15s;
+      transition: all 0.12s;
+      text-align: center;
     }
-    .action-btn:hover { opacity: 0.8; }
-    .action-primary { background: var(--black); color: var(--green); }
-    .action-secondary { background: var(--green); color: var(--black); }
-    .action-ghost { background: var(--surface); color: var(--black); border: 1.5px solid var(--border-strong); }
-    .cta-privana {
+    .action-btn:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    /* ══════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════ */
+    #screen-empty {
+      gap: 20px;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-family: var(--serif);
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .empty-sub {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--ink-light);
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════
+       ERROR
+    ══════════════════════════════ */
+    #screen-error {
+      gap: 16px;
+      text-align: center;
+    }
+
+    .error-msg {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: #c0392b;
+      background: #fdf0ee;
+      border: 1px solid #f5c6c1;
+      border-radius: 4px;
+      padding: 12px 20px;
+      max-width: 500px;
+    }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    footer {
+      flex-shrink: 0;
+      padding: 12px 36px;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
-      background: var(--black);
-      border-radius: 6px;
-      padding: 0.85rem 1rem;
-      margin-bottom: 0.6rem;
     }
-    .cta-privana span { font-family: "DM Mono", monospace; font-size: 10px; color: rgba(255,255,255,0.45); }
-    .cta-privana p { color: #fff !important; }
+
+    .footer-left {
+      font-size: 11px;
+      color: var(--ink-light);
+      font-weight: 300;
+    }
+
+    .footer-right {
+      font-size: 11px;
+      color: var(--ink-light);
+      font-weight: 300;
+    }
+
+    .footer-right a {
+      color: var(--ink-light);
+      text-decoration: none;
+    }
+    .footer-right a:hover { color: var(--ink); }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
     @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      footer { padding: 10px 20px; }
+      .screen { padding: 24px 16px; }
       .stats-row { grid-template-columns: 1fr 1fr; }
-      .headline { font-size: 1.9rem; }
-      nav { padding: 0 1rem; }
-      .screen { padding: 1.25rem; }
-      .cta-strip { flex-direction: column; align-items: flex-start; }
+      .loss-card { flex-direction: column; align-items: flex-start; }
+      .cta-strip { flex-direction: column; text-align: center; }
     }
   </style>
 </head>
-<body>
-<div class="app">
 
+<body>
+<div id="app">
+
+  <!-- ── NAV ── -->
   <nav>
-    <div class="nav-icon">
-      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1.5" y="1.5" width="13" height="13" rx="2" stroke="#c8ff00" stroke-width="1.5" fill="none"/>
-        <line x1="1.5" y1="14.5" x2="14.5" y2="1.5" stroke="#c8ff00" stroke-width="1.5"/>
-      </svg>
+    <div class="nav-brand">
+      <!-- circular blinds badge -->
+      <div class="nav-badge">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="16" fill="#1a1a1a"/>
+          <!-- horizontal blind slats clipped to circle -->
+          <clipPath id="circ"><circle cx="16" cy="16" r="14"/></clipPath>
+          <g clip-path="url(#circ)">
+            <rect x="2" y="5"  width="28" height="2.5" rx="0.5" fill="#e8c547" opacity="0.9"/>
+            <rect x="2" y="10" width="28" height="2.5" rx="0.5" fill="#f5f2ea" opacity="0.55"/>
+            <rect x="2" y="15" width="28" height="2.5" rx="0.5" fill="#f5f2ea" opacity="0.45"/>
+            <rect x="2" y="20" width="28" height="2.5" rx="0.5" fill="#f5f2ea" opacity="0.35"/>
+            <rect x="2" y="25" width="28" height="2.5" rx="0.5" fill="#f5f2ea" opacity="0.25"/>
+          </g>
+        </svg>
+      </div>
+      <div class="nav-wordmark">
+        <span class="nav-title">MEV Checker</span>
+      </div>
     </div>
-    <div class="nav-eyebrow">MEV Checker</div>
-    <div></div>
   </nav>
 
-  <!-- SCREEN 1: INPUT -->
-  <div class="screen active" id="screen-input">
-    <div class="input-screen-inner">
-      <h1 class="headline">Bots have been<br><em>eating your trades.</em><br>See how much.</h1>
-      <p class="tagline">// no signup. no wallet connect. results in ~20 seconds.</p>
-      <div class="input-wrap">
-        <input id="wallet-input" type="text" placeholder="paste your wallet address — 0x..." autocomplete="off" spellcheck="false" />
-        <button id="check-btn" onclick="runCheck()">Check →</button>
-      </div>
-      <p class="hint">
-        try: <button onclick="loadExample('vitalik')">vitalik.eth</button>
-        &nbsp;·&nbsp;
-        <button onclick="loadExample('sisyphus')">0xSisyphus</button>
-      </p>
+  <!-- ══════════════════════════════
+       SEARCH SCREEN
+  ══════════════════════════════ -->
+  <div id="screen-search" class="screen active">
+    <h1 class="hero-headline">Bots have been <em>eating</em> your trades.<br>See how much.</h1>
+    <p class="hero-sub">// no signup. no wallet connect. results in ~20 seconds</p>
+
+    <div class="input-wrap">
+      <input
+        id="wallet-input"
+        type="text"
+        placeholder="0x..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button onclick="runCheck()">Check →</button>
+    </div>
+
+    <div class="examples">
+      <span>Try:</span>
+      <button class="example-btn" onclick="loadExample('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')">0xSisyphus</button>
+      <button class="example-btn" onclick="loadExample('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')">Vitalik</button>
     </div>
   </div>
 
-  <!-- SCREEN 2: LOADING -->
-  <div class="screen" id="screen-loading">
-    <div class="loading-inner">
-      <div class="load-bar-wrap"><div class="load-bar-fill" id="load-bar"></div></div>
-      <p class="load-text" id="load-text">// scanning 12 months of onchain data...</p>
+  <!-- ══════════════════════════════
+       LOADING SCREEN
+  ══════════════════════════════ -->
+  <div id="screen-loading" class="screen">
+    <p class="loading-label">Scanning the chain&hellip;</p>
+    <p class="scan-address" id="scan-address-display"></p>
+    <div class="load-bar-track">
+      <div class="load-bar-fill" id="load-bar"></div>
     </div>
+    <p class="load-message" id="load-msg"></p>
   </div>
 
-  <!-- SCREEN 3: RESULTS -->
-  <div class="screen" id="screen-results">
-    <div class="results-inner">
-      <button class="back-btn" onclick="goBack()">Back</button>
+  <!-- ══════════════════════════════
+       RESULTS SCREEN
+  ══════════════════════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="results-top">
+      <span class="results-wallet" id="result-wallet-label"></span>
+      <button class="back-btn" onclick="goBack()">← Check another</button>
+    </div>
 
-      <div id="confirmed-badge" class="confirmed-badge" style="display:none;">sandwich attacks confirmed</div>
-
-      <p class="loss-label">// estimated mev losses — last 1 year</p>
-      <div class="loss-number"><span id="result-loss">$0</span></div>
-      <p class="loss-sub" id="result-sub"></p>
-
-      <div class="stats-row">
-        <div class="stat">
-          <p class="stat-label">dex trades</p>
-          <div class="stat-value" id="stat-trades">0</div>
-          <p class="stat-sub">1 year</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">dex volume</p>
-          <div class="stat-value" id="stat-volume">$0</div>
-          <p class="stat-sub">multichain</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">sandwiches</p>
-          <div class="stat-value" id="stat-incidents">0</div>
-          <p class="stat-sub" id="stat-incidents-sub">confirmed</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">vol. sandwiched</p>
-          <div class="stat-value" id="stat-sandwich-vol">$0</div>
-          <p class="stat-sub">exposed</p>
-        </div>
+    <!-- big loss card -->
+    <div class="loss-card">
+      <div class="loss-card-left">
+        <p class="loss-label">Estimated MEV loss · past 12 months</p>
+        <div class="loss-amount" id="result-amount">—</div>
+        <p class="loss-period" id="result-period"></p>
       </div>
-
-      <div id="worst-box" class="worst-box" style="display:none;">
-        <div class="worst-left">
-          <p class="worst-label">// largest trade exposed</p>
-          <p class="worst-pair" id="worst-pair">—</p>
-          <p class="worst-amount" id="worst-amount">—</p>
-        </div>
-        <a class="worst-link" id="worst-link" href="#" target="_blank" rel="noopener">view →</a>
-      </div>
-
-      <div class="methodology">
-        <p id="methodology-text"></p>
-      </div>
-
-      <div class="cta-privana">
-        <div>
-          <p style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:3px;">Stop losing to MEV bots.</p>
-          <span>Privana routes your trades through private mempools.</span>
-        </div>
-        <a href="https://privana.xyz" target="_blank" rel="noopener" style="background:var(--black);color:var(--green);padding:0.5rem 1rem;border-radius:4px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">Try Privana →</a>
-      </div>
-      <div class="action-row">
-        <a id="share-btn" class="action-btn action-primary" href="#" target="_blank" rel="noopener">Share on X</a>
-        <button class="action-btn action-secondary" onclick="copyImage()">Copy image</button>
-        <button class="action-btn action-ghost" onclick="goBack()">Check another</button>
+      <div class="loss-badge">
+        <div class="loss-badge-num" id="result-incidents">—</div>
+        <div class="loss-badge-label">incidents</div>
       </div>
     </div>
-  </div>
 
-  <!-- SCREEN 4: NONE -->
-  <div class="screen" id="screen-none">
-    <div class="none-inner">
-      <div class="none-icon">◎</div>
-      <p class="none-title">No DEX activity found.</p>
-      <p class="none-sub">// no trades detected in the last 12 months<br>// across ethereum, arbitrum, base or polygon.</p>
-      <button class="none-back" onclick="goBack()">← Check another wallet</button>
-      <div class="cta-strip">
-        <div class="cta-strip-text">
-          <p>When you trade, trade safely.</p>
-          <span>Privana protects every swap from MEV bots.</span>
-        </div>
-        <a class="cta-strip-btn" href="https://privana.xyz" target="_blank" rel="noopener">Try Privana →</a>
+    <!-- stats -->
+    <div class="stats-row">
+      <div class="stat-cell">
+        <p class="stat-label">Largest exposure</p>
+        <p class="stat-value" id="stat-largest">—</p>
+        <p class="stat-sub">single trade</p>
+      </div>
+      <div class="stat-cell">
+        <p class="stat-label">MEV rate</p>
+        <p class="stat-value" id="stat-rate">—</p>
+        <p class="stat-sub">of volume</p>
+      </div>
+      <div class="stat-cell">
+        <p class="stat-label">Volume scanned</p>
+        <p class="stat-value" id="stat-volume">—</p>
+        <p class="stat-sub">across 3 chains</p>
       </div>
     </div>
+
+    <!-- Privana CTA -->
+    <div class="cta-strip">
+      <span class="cta-copy">Stop losing to MEV bots.</span>
+      <a class="cta-btn" href="https://privana.finance/" target="_blank" rel="noopener">Try Privana →</a>
+    </div>
+
+    <!-- share row -->
+    <div class="action-row">
+      <button class="action-btn" onclick="shareOnX()">Share on X</button>
+      <button class="action-btn" onclick="copyImage()">Copy image</button>
+      <button class="action-btn" onclick="goBack()">Check another</button>
+    </div>
+
+    <!-- methodology -->
+    <p class="methodology" id="result-methodology"></p>
   </div>
 
-  <!-- SCREEN 5: ERROR -->
-  <div class="screen" id="screen-error">
-    <div class="error-inner">
-      <div class="error-box"><p id="error-msg">Something went wrong. Please try again.</p></div>
-      <button class="error-back" onclick="goBack()">← Try again</button>
+  <!-- ══════════════════════════════
+       EMPTY SCREEN
+  ══════════════════════════════ -->
+  <div id="screen-empty" class="screen">
+    <div class="empty-icon">◎</div>
+    <h2 class="empty-title">No MEV detected.</h2>
+    <p class="empty-sub">We found no sandwich attacks or MEV incidents on this wallet over the past 12 months across Ethereum, Arbitrum, and Base.</p>
+    <div class="cta-strip" style="text-align:left">
+      <span class="cta-copy">Keep it that way.</span>
+      <a class="cta-btn" href="https://privana.finance/" target="_blank" rel="noopener">Try Privana →</a>
     </div>
+    <button class="back-btn" onclick="goBack()" style="margin-top:4px">← Check another wallet</button>
   </div>
+
+  <!-- ══════════════════════════════
+       ERROR SCREEN
+  ══════════════════════════════ -->
+  <div id="screen-error" class="screen">
+    <p class="error-msg" id="error-msg">Something went wrong.</p>
+    <button class="back-btn" onclick="goBack()">← Try again</button>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span class="footer-left">Estimates only. Not financial advice.</span>
+    <span class="footer-right"><a href="https://privana.finance/" target="_blank" rel="noopener">privana.finance</a></span>
+  </footer>
 
 </div>
 
 <script>
-  const LOADING_MESSAGES = [
-    '// scanning 12 months of onchain data...',
-    '// querying sandwich attack records...',
-    '// calculating dex trading volume...',
-    '// estimating mev exposure...',
-    '// almost there...',
+  const SCREENS = ['search','loading','results','empty','error'];
+  let currentWallet = '';
+  let currentResult = null;
+
+  const LOAD_MESSAGES = [
+    'FETCHING TRANSACTIONS',
+    'DETECTING DEX TRADES',
+    'ANALYSING SANDWICH PATTERNS',
+    'PRICING ASSETS',
+    'CALCULATING EXPOSURE',
   ];
 
-  const EXAMPLES = {
-    vitalik: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-    sisyphus: '0x9C5083dd4838E120Dbeac44C052179692Aa5dAC5',
-  };
-
-  let loadInterval, msgIndex = 0, barProgress = 0;
-
   function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + id).classList.add('active');
+    SCREENS.forEach(s => {
+      const el = document.getElementById('screen-' + s);
+      el.classList.toggle('active', s === id);
+    });
   }
 
-  function goBack() {
-    showScreen('input');
-    document.getElementById('wallet-input').focus();
-  }
+  let loadInterval = null;
+  let loadPct = 0;
 
-  function startLoading() {
-    showScreen('loading');
-    document.getElementById('check-btn').disabled = true;
-    barProgress = 0; msgIndex = 0;
-    document.getElementById('load-bar').style.width = '0%';
-    document.getElementById('load-text').textContent = LOADING_MESSAGES[0];
+  function startLoading(wallet) {
+    loadPct = 0;
+    const bar = document.getElementById('load-bar');
+    bar.style.width = '0%';
+    document.getElementById('scan-address-display').textContent =
+      wallet.slice(0,6) + '...' + wallet.slice(-4);
+    document.getElementById('load-msg').textContent = LOAD_MESSAGES[0];
+
+    let step = 0;
     loadInterval = setInterval(() => {
-      barProgress = Math.min(barProgress + Math.random() * 10 + 4, 88);
-      document.getElementById('load-bar').style.width = barProgress + '%';
-      msgIndex = Math.min(msgIndex + 1, LOADING_MESSAGES.length - 1);
-      document.getElementById('load-text').textContent = LOADING_MESSAGES[msgIndex];
-    }, 1000);
+      step++;
+      loadPct = Math.min(loadPct + (100 / (LOAD_MESSAGES.length)), 95);
+      bar.style.width = loadPct + '%';
+      if (step < LOAD_MESSAGES.length) {
+        document.getElementById('load-msg').textContent = LOAD_MESSAGES[step];
+      }
+    }, 900);
   }
 
-  function stopLoading() {
+  function finishLoading() {
     clearInterval(loadInterval);
     document.getElementById('load-bar').style.width = '100%';
-    document.getElementById('check-btn').disabled = false;
-  }
-
-  function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-  function fmtDate(s) { return s ? s.slice(0, 10) : ''; }
-
-  function explorerUrl(txHash, blockchain) {
-    const bases = { ethereum: 'https://etherscan.io/tx/', arbitrum: 'https://arbiscan.io/tx/', base: 'https://basescan.org/tx/', polygon: 'https://polygonscan.com/tx/' };
-    return (bases[blockchain] || 'https://etherscan.io/tx/') + txHash;
   }
 
   async function runCheck() {
-    const wallet = document.getElementById('wallet-input').value.trim();
-    if (!wallet) return;
-    if (!/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
-      document.getElementById('error-msg').textContent = '// invalid address — must start with 0x and be 42 characters.';
-      showScreen('error');
-      return;
-    }
-
-    startLoading();
+    const input = document.getElementById('wallet-input').value.trim();
+    if (!input) return;
+    currentWallet = input;
+    showScreen('loading');
+    startLoading(input);
 
     try {
-      const [res] = await Promise.all([
-        fetch('/api/check?wallet=' + encodeURIComponent(wallet)),
-        new Promise(r => setTimeout(r, 5000))
-      ]);
-      const data = await res.json();
-      stopLoading();
-      if (!res.ok) throw new Error(data.error || 'API error');
-
-      if (data.type === 'none') {
-        showScreen('none');
-        return;
-      }
-
-      document.getElementById('result-loss').textContent = fmt(data.estimatedLoss);
-
-      // CT-degen share copy
-      const shareText = 'I lost ' + fmt(data.estimatedLoss) + ' to MEV bots last year.\n\nCheck your wallet ↓';
-      const shareParams = new URLSearchParams({
-        loss: fmt(data.estimatedLoss),
-        trades: data.dexTrades,
-        volume: fmt(data.dexVolume),
-        incidents: data.incidents,
-        sandwichVol: fmt(data.sandwichVolume),
-        confirmed: data.incidents > 0 ? '1' : '0',
-      });
-      const shareUrl = 'https://mev-checker.xyz/api/share?' + shareParams.toString();
-      
-      document.getElementById('share-btn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl);
-
-      document.getElementById('stat-trades').textContent = data.dexTrades.toLocaleString();
-      document.getElementById('stat-volume').textContent = fmt(data.dexVolume);
-
-      if (data.incidents > 0) {
-        document.getElementById('confirmed-badge').style.display = 'inline-flex';
-        document.getElementById('stat-incidents').textContent = data.incidents;
-        document.getElementById('stat-sandwich-vol').textContent = fmt(data.sandwichVolume);
-        const chainLabel = data.chains && data.chains.length ? ' on ' + data.chains.join(', ') : '';
-        document.getElementById('result-sub').textContent =
-          fmt(data.dexVolume) + ' dex volume × 1.25% mev rate · ' +
-          data.incidents + ' sandwich' + (data.incidents !== 1 ? 'es' : '') + ' confirmed' + chainLabel;
-        document.getElementById('methodology-text').textContent =
-          'estimated loss = total dex volume × 1.25%. ' + data.incidents +
-          ' sandwich attack' + (data.incidents !== 1 ? 's' : '') +
-          ' confirmed via dune analytics dex.sandwiched' + chainLabel +
-          '. sandwich incidents are real onchain data. total figure is an estimate.';
-        if (data.worstTrade) {
-          const w = data.worstTrade;
-          document.getElementById('worst-pair').textContent = w.tokenSold + ' → ' + w.tokenBought;
-          document.getElementById('worst-amount').textContent = fmt(w.amountUsd) + ' · ' + fmtDate(w.blockTime);
-          document.getElementById('worst-link').href = explorerUrl(w.txHash, w.blockchain);
-          document.getElementById('worst-box').style.display = 'flex';
-        }
-      } else {
-        document.getElementById('confirmed-badge').style.display = 'none';
-        document.getElementById('stat-incidents').textContent = '0';
-        document.getElementById('stat-incidents-sub').textContent = 'none found';
-        document.getElementById('stat-sandwich-vol').textContent = '$0';
-        document.getElementById('worst-box').style.display = 'none';
-        document.getElementById('result-sub').textContent =
-          fmt(data.dexVolume) + ' dex volume × 1.25% mev rate · no confirmed sandwiches';
-        document.getElementById('methodology-text').textContent =
-          'estimated loss = total dex volume × 1.25%. no confirmed sandwich attacks found via dune analytics dex.sandwiched across ethereum, arbitrum, base and polygon. figure is a statistical estimate only.';
-      }
-
-      showScreen('results');
-
+      const response = await fetch('/api/check?wallet=' + encodeURIComponent(input));
+      if (!response.ok) throw new Error('API error ' + response.status);
+      const data = await response.json();
+      finishLoading();
+      setTimeout(() => displayResults(data), 400);
     } catch (err) {
-      stopLoading();
-      document.getElementById('error-msg').textContent = '// ' + (err.message || 'something went wrong. please try again.');
-      showScreen('error');
+      finishLoading();
+      document.getElementById('error-msg').textContent = err.message || 'Something went wrong.';
+      setTimeout(() => showScreen('error'), 300);
     }
   }
 
-  function loadExample(name) {
-    document.getElementById('wallet-input').value = EXAMPLES[name];
+  function loadExample(addr) {
+    document.getElementById('wallet-input').value = addr;
     runCheck();
   }
 
+  function displayResults(data) {
+    if (!data || data.totalLossUsd === 0) {
+      showScreen('empty');
+      return;
+    }
+    currentResult = data;
+
+    document.getElementById('result-wallet-label').textContent =
+      currentWallet.slice(0,8) + '...' + currentWallet.slice(-6);
+    document.getElementById('result-amount').textContent =
+      '$' + formatNum(data.totalLossUsd);
+    document.getElementById('result-incidents').textContent =
+      data.incidentCount || '—';
+    document.getElementById('result-period').textContent =
+      'across ' + (data.tradesAnalyzed || '?') + ' trades analysed';
+    document.getElementById('stat-largest').textContent =
+      data.largestLoss ? '$' + formatNum(data.largestLoss) : '—';
+    document.getElementById('stat-rate').textContent =
+      data.mevRate ? data.mevRate.toFixed(2) + '%' : '—';
+    document.getElementById('stat-volume').textContent =
+      data.totalVolume ? '$' + shortNum(data.totalVolume) : '—';
+    document.getElementById('result-methodology').textContent =
+      data.methodology || '';
+
+    showScreen('results');
+  }
+
+  function formatNum(n) {
+    if (!n) return '0';
+    return n.toLocaleString('en-US', {maximumFractionDigits: 0});
+  }
+
+  function shortNum(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+    return formatNum(n);
+  }
+
+  function goBack() {
+    showScreen('search');
+    document.getElementById('wallet-input').value = currentWallet;
+  }
+
+  function shareOnX() {
+    const loss = currentResult ? '$' + formatNum(currentResult.totalLossUsd) : '?';
+    const text = `MEV bots extracted ${loss} from this wallet in the last year.\n\nCheck yours: https://mev-checker.vercel.app\n\nby @privana_finance`;
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+  }
+
   async function copyImage() {
-    const btn = document.querySelector('.action-secondary');
-    btn.textContent = 'Copying...';
-
-    const loss = document.getElementById('result-loss').textContent;
-    const trades = document.getElementById('stat-trades').textContent;
-    const volume = document.getElementById('stat-volume').textContent;
-    const incidents = document.getElementById('stat-incidents').textContent;
-    const sandwichVol = document.getElementById('stat-sandwich-vol').textContent;
-    const confirmed = document.getElementById('confirmed-badge').style.display !== 'none';
-
-    const W = 1200, H = 630;
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
-
-    // Background
-    ctx.fillStyle = '#e8e8e2';
-    ctx.fillRect(0, 0, W, H);
-
-    // Grid
-    ctx.strokeStyle = 'rgba(0,0,0,0.07)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 14; i++) { ctx.beginPath(); ctx.moveTo(0,i*48); ctx.lineTo(W,i*48); ctx.stroke(); }
-    for (let i = 0; i < 26; i++) { ctx.beginPath(); ctx.moveTo(i*48,0); ctx.lineTo(i*48,H); ctx.stroke(); }
-
-    // Nav
-    ctx.fillStyle = '#e8e8e2';
-    ctx.fillRect(0, 0, W, 60);
-    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0,60); ctx.lineTo(W,60); ctx.stroke();
-
-    // Nav icon
-    ctx.fillStyle = '#111110';
-    ctx.beginPath(); roundRect(ctx,48,14,32,32,5); ctx.fill();
-    ctx.strokeStyle = '#c8ff00'; ctx.lineWidth = 1.5;
-    ctx.strokeRect(52,18,24,24);
-    ctx.beginPath(); ctx.moveTo(52,42); ctx.lineTo(76,18); ctx.stroke();
-
-    // Nav text
-    ctx.fillStyle = '#666660';
-    ctx.font = '12px Courier New';
-    ctx.textAlign = 'center';
-    ctx.fillText('MEV CHECKER', 600, 38);
-    ctx.fillStyle = '#99998f';
-    ctx.font = '11px Courier New';
-    ctx.textAlign = 'right';
-    ctx.fillText('mev-checker.xyz', 1152, 38);
-    ctx.textAlign = 'left';
-
-    let y = 84;
-
-    // Badge
-    if (confirmed) {
-      ctx.fillStyle = '#c8ff00';
-      roundRect(ctx,48,y,316,26,4); ctx.fill();
-      ctx.fillStyle = '#111110';
-      ctx.beginPath(); ctx.arc(64,y+13,4,0,Math.PI*2); ctx.fill();
-      ctx.font = 'bold 11px Courier New';
-      ctx.fillText('SANDWICH ATTACKS CONFIRMED', 76, y+18);
-      y += 40;
-    }
-
-    // Label
-    ctx.fillStyle = '#666660';
-    ctx.font = '12px Courier New';
-    ctx.fillText('// ESTIMATED MEV LOSSES — LAST 1 YEAR', 48, y+20);
-    y += 30;
-
-    // Big number bg
-    const numW = Math.min(loss.length * 72 + 24, 980);
-    ctx.fillStyle = '#c8ff00';
-    ctx.fillRect(44, y, numW, 136);
-    ctx.fillStyle = '#111110';
-    ctx.font = 'bold 120px Courier New';
-    ctx.fillText(loss, 56, y+116);
-    y += 150;
-
-    // Stats
-    const cols = [
-      ['DEX TRADES', trades, '1 year'],
-      ['DEX VOLUME', volume, 'multichain'],
-      ['SANDWICHES', incidents, confirmed ? 'confirmed' : 'none found'],
-      ['VOL. SANDWICHED', sandwichVol, 'exposed'],
-    ];
-    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    roundRect(ctx,48,y,1104,96,6); ctx.fill();
-    cols.forEach(([label,val,sub],i) => {
-      const x = 48 + i*276 + 1;
-      ctx.fillStyle = '#f0f0ea';
-      ctx.fillRect(x, y+1, 274, 94);
-      if (i > 0) { ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+96); ctx.stroke(); }
-      ctx.fillStyle = '#99998f'; ctx.font = '10px Courier New'; ctx.fillText(label, x+20, y+22);
-      ctx.fillStyle = '#111110'; ctx.font = 'bold 24px Courier New'; ctx.fillText(val, x+20, y+56);
-      ctx.fillStyle = '#99998f'; ctx.font = '10px Courier New'; ctx.fillText(sub, x+20, y+76);
-    });
-    y += 104;
-
-    // CTA
-    ctx.fillStyle = '#111110';
-    roundRect(ctx,48,y,1104,52,6); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Courier New';
-    ctx.fillText('Stop losing to MEV bots.', 72, y+22);
-    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '11px Courier New';
-    ctx.fillText('Privana routes your trades through private mempools.', 72, y+40);
-    ctx.fillStyle = '#c8ff00';
-    roundRect(ctx,1002,y+10,134,32,4); ctx.fill();
-    ctx.fillStyle = '#111110'; ctx.font = 'bold 12px Courier New';
-    ctx.textAlign = 'center';
-    ctx.fillText('Try Privana', 1069, y+31);
-
-    function roundRect(c,x,y,w,h,r) {
-      c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+w-r,y); c.quadraticCurveTo(x+w,y,x+w,y+r);
-      c.lineTo(x+w,y+h-r); c.quadraticCurveTo(x+w,y+h,x+w-r,y+h); c.lineTo(x+r,y+h);
-      c.quadraticCurveTo(x,y+h,x,y+h-r); c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y); c.closePath();
-    }
-
+    const btn = document.querySelector('.action-btn');
     try {
-      canvas.toBlob(async (blob) => {
-        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
-        btn.textContent = 'Copied!';
-        setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
-      }, 'image/png');
-    } catch(e) {
-      btn.textContent = 'Not supported';
-      setTimeout(() => { btn.textContent = 'Copy image'; }, 2000);
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200; canvas.height = 628;
+      const ctx = canvas.getContext('2d');
+
+      // bg
+      ctx.fillStyle = '#f5f2ea';
+      ctx.fillRect(0, 0, 1200, 628);
+
+      // blinds
+      ctx.fillStyle = 'rgba(26,26,26,0.03)';
+      for (let y = 0; y < 628; y += 28) {
+        ctx.fillRect(0, y, 1200, 4);
+      }
+
+      // yellow left bar
+      ctx.fillStyle = '#e8c547';
+      ctx.fillRect(80, 140, 6, 200);
+
+      // loss amount
+      ctx.fillStyle = '#1a1a1a';
+      ctx.font = 'bold 96px Georgia';
+      const loss = currentResult ? '$' + formatNum(currentResult.totalLossUsd) : '$0';
+      ctx.fillText(loss, 110, 260);
+
+      // label
+      ctx.fillStyle = '#7a7570';
+      ctx.font = '20px sans-serif';
+      ctx.fillText('ESTIMATED MEV LOSS · PAST 12 MONTHS', 110, 175);
+
+      // wallet
+      ctx.font = '18px monospace';
+      ctx.fillText(currentWallet.slice(0,10) + '...' + currentWallet.slice(-8), 110, 310);
+
+      // Privana tag
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(800, 490, 320, 60);
+      ctx.fillStyle = '#f5f2ea';
+      ctx.font = '22px sans-serif';
+      ctx.fillText('mev-checker · by Privana', 830, 527);
+
+      canvas.toBlob(blob => {
+        navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      });
+    } catch (e) {
+      console.error(e);
     }
   }
 
