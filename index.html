@@ -132,22 +132,25 @@
 
     .hero-headline {
       font-family: var(--serif);
-      font-size: clamp(32px, 5vw, 52px);
+      font-size: clamp(36px, 4.5vw, 56px);
       font-weight: 400;
       line-height: 1.15;
       letter-spacing: -0.02em;
       text-align: center;
       color: var(--ink);
-      max-width: 640px;
+      max-width: 900px;
+      
     }
 
+    .hero-headline .line1 { font-weight: 600; display: block; }
+    .hero-headline .line2 { font-weight: 300; display: block; color: var(--ink-mid); }
     .hero-headline em {
       font-style: italic;
       color: var(--ink-mid);
     }
 
     .hero-sub {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 300;
       color: var(--ink-light);
       text-align: center;
@@ -188,7 +191,7 @@
       border: none;
       cursor: pointer;
       letter-spacing: 0.02em;
-      white-space: nowrap;
+      
       transition: opacity 0.15s;
     }
     .input-wrap button:hover { opacity: 0.8; }
@@ -453,7 +456,7 @@
       text-decoration: none;
       letter-spacing: 0.01em;
       transition: opacity 0.15s;
-      white-space: nowrap;
+      
     }
     .cta-btn:hover { opacity: 0.85; }
 
@@ -584,7 +587,7 @@
 
   <!-- ── NAV ── -->
   <nav>
-    <div class="nav-brand">
+    <a class="nav-brand" href="/" style="text-decoration:none;">
       <!-- circular blinds badge -->
       <div class="nav-badge">
         <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -603,14 +606,14 @@
       <div class="nav-wordmark">
         <span class="nav-title">MEV Checker</span>
       </div>
-    </div>
+    </a>
   </nav>
 
   <!-- ══════════════════════════════
        SEARCH SCREEN
   ══════════════════════════════ -->
   <div id="screen-search" class="screen active">
-    <h1 class="hero-headline">Bots have been <em>eating</em> your trades.<br>See how much.</h1>
+    <h1 class="hero-headline"><span class="line1">Bots have been <em>eating</em> your trades.</span><span class="line2">See how much.</span></h1>
     <p class="hero-sub">// no signup. no wallet connect. results in ~20 seconds</p>
 
     <div class="input-wrap">
@@ -726,7 +729,7 @@
   <!-- ── FOOTER ── -->
   <footer>
     <span class="footer-left">Estimates only. Not financial advice.</span>
-    <span class="footer-right"><a href="https://privana.finance/" target="_blank" rel="noopener">privana.finance</a></span>
+
   </footer>
 
 </div>
