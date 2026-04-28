@@ -2,14 +2,13 @@ module.exports = async function handler(req, res) {
   const { loss, trades, volume, incidents, sandwichVol, confirmed } = req.query;
 
   const title = loss
-    ? `MEV bots may have stolen ${loss} from my wallet`
-    : 'Have MEV bots been stealing from your wallet?';
+    ? `MEV bots took ${loss} from my wallet in the last year.`
+    : 'Have MEV bots been eating your trades?';
 
   const description = loss
-    ? `${trades || '0'} DEX trades · ${volume || '$0'} total volume · ${incidents || '0'} confirmed sandwich attacks. Check how much you've lost.`
-    : 'Paste your Ethereum wallet address and find out how much MEV bots have extracted from your trades in the last 12 months.';
+    ? `Check yours — paste any wallet and see how much you've lost to bots.`
+    : 'Paste your wallet. No signup, no wallet connect. Results in ~20 seconds.';
 
-  // Build the dynamic card URL from the same params we received
   const cardParams = new URLSearchParams();
   if (loss) cardParams.set('loss', loss);
   if (trades) cardParams.set('trades', trades);
@@ -20,7 +19,6 @@ module.exports = async function handler(req, res) {
 
   const cardUrl = 'https://mev-checker.xyz/api/card' +
     (cardParams.toString() ? '?' + cardParams.toString() : '');
-
   const siteUrl = 'https://mev-checker.xyz';
 
   const html = `<!DOCTYPE html>
