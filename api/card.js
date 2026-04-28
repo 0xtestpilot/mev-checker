@@ -37,8 +37,6 @@ export default async function handler(req) {
             fontFamily: 'Inter',
           },
           children: [
-
-            // Nav
             {
               type: 'div',
               props: {
@@ -56,8 +54,6 @@ export default async function handler(req) {
                 ]
               }
             },
-
-            // Main content
             {
               type: 'div',
               props: {
@@ -68,11 +64,7 @@ export default async function handler(req) {
                   flex: 1,
                 },
                 children: [
-
-                  // Label
                   { type: 'div', props: { style: { display: 'flex', fontSize: '13px', color: '#7a7570', letterSpacing: '0.3px', marginBottom: '14px' }, children: 'Estimated MEV loss · past 12 months' } },
-
-                  // Loss card — white, yellow left rail
                   {
                     type: 'div',
                     props: {
@@ -88,7 +80,6 @@ export default async function handler(req) {
                         gap: '32px',
                       },
                       children: [
-                        // Big number
                         {
                           type: 'div',
                           props: {
@@ -96,7 +87,6 @@ export default async function handler(req) {
                             children: loss
                           }
                         },
-                        // Incidents
                         {
                           type: 'div',
                           props: {
@@ -110,8 +100,6 @@ export default async function handler(req) {
                       ]
                     }
                   },
-
-                  // Stats row
                   {
                     type: 'div',
                     props: {
@@ -150,8 +138,6 @@ export default async function handler(req) {
                       ]
                     }
                   },
-
-                  // CTA strip
                   {
                     type: 'div',
                     props: {
@@ -177,6 +163,9 @@ export default async function handler(req) {
       {
         width: 1200,
         height: 630,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
         fonts: [
           { name: 'Inter', data: regularFont, style: 'normal', weight: 400 },
           { name: 'Inter', data: boldFont, style: 'normal', weight: 700 },
