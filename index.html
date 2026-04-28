@@ -796,7 +796,10 @@
     startLoading(input);
 
     try {
-      const response = await fetch('/api/check?wallet=' + encodeURIComponent(input));
+      const [response] = await Promise.all([
+        fetch('/api/check?wallet=' + encodeURIComponent(input)),
+        new Promise(r => setTimeout(r, 5000))
+      ]);
       if (!response.ok) throw new Error('API error ' + response.status);
       const data = await response.json();
       finishLoading();
