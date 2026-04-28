@@ -117,19 +117,37 @@ export default async function handler(req) {
                     props: {
                       style: { display: 'flex', gap: '12px', marginBottom: '16px' },
                       children: [
-                        ['DEX trades', trades],
-                        ['Volume scanned', volume],
-                        ['MEV rate', '1.25%'],
-                      ].map(([label, val]) => ({
-                        type: 'div',
-                        props: {
-                          style: { flex: 1, background: 'white', border: '1px solid rgba(26,26,26,0.1)', borderRadius: '5px', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: '4px' },
-                          children: [
-                            { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: '#7a7570', letterSpacing: '1px' }, children: label } },
-                            { type: 'div', props: { style: { display: 'flex', fontSize: '26px', fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }, children: val } },
-                          ]
-                        }
-                      }))
+                        {
+                          type: 'div',
+                          props: {
+                            style: { flex: 1, background: 'white', border: '1px solid rgba(26,26,26,0.1)', borderRadius: '5px', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: '4px' },
+                            children: [
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: '#7a7570', letterSpacing: '1px' }, children: 'DEX trades' } },
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '26px', fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }, children: trades } },
+                            ]
+                          }
+                        },
+                        {
+                          type: 'div',
+                          props: {
+                            style: { flex: 1, background: 'white', border: '1px solid rgba(26,26,26,0.1)', borderRadius: '5px', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: '4px' },
+                            children: [
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: '#7a7570', letterSpacing: '1px' }, children: 'Volume scanned' } },
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '26px', fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }, children: volume } },
+                            ]
+                          }
+                        },
+                        {
+                          type: 'div',
+                          props: {
+                            style: { flex: 1, background: 'white', border: '1px solid rgba(26,26,26,0.1)', borderRadius: '5px', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: '4px' },
+                            children: [
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '11px', color: '#7a7570', letterSpacing: '1px' }, children: 'MEV rate' } },
+                              { type: 'div', props: { style: { display: 'flex', fontSize: '26px', fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }, children: '1.25%' } },
+                            ]
+                          }
+                        },
+                      ]
                     }
                   },
 
