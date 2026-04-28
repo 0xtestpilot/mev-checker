@@ -804,7 +804,7 @@
   }
 
   function displayResults(data) {
-    if (!data || data.totalLossUsd === 0) {
+    if (!data || (data.estimatedLoss === 0 && data.dexTrades === 0)) {
       showScreen('empty');
       return;
     }
@@ -813,19 +813,18 @@
     document.getElementById('result-wallet-label').textContent =
       currentWallet.slice(0,8) + '...' + currentWallet.slice(-6);
     document.getElementById('result-amount').textContent =
-      '$' + formatNum(data.totalLossUsd);
+      '$' + formatNum(data.estimatedLoss);
     document.getElementById('result-incidents').textContent =
-      data.incidentCount || '—';
+      data.incidents || '—';
     document.getElementById('result-period').textContent =
-      'across ' + (data.tradesAnalyzed || '?') + ' trades analysed';
+      'across ' + (data.dexTrades || '?') + ' trades analysed';
     document.getElementById('stat-largest').textContent =
-      data.largestLoss ? '$' + formatNum(data.largestLoss) : '—';
-    document.getElementById('stat-rate').textContent =
-      data.mevRate ? data.mevRate.toFixed(2) + '%' : '—';
+      data.worstTrade?.amountUsd ? '$' + formatNum(data.worstTrade.amountUsd) : '—';
+    document.getElementById('stat-rate').textContent = '1.25%';
     document.getElementById('stat-volume').textContent =
-      data.totalVolume ? '$' + shortNum(data.totalVolume) : '—';
+      data.dexVolume ? '$' + shortNum(data.dexVolume) : '—';
     document.getElementById('result-methodology').textContent =
-      data.methodology || '';
+      'Estimated at 1.25% of DEX volume across Ethereum, Arbitrum and Base.';
 
     showScreen('results');
   }
@@ -847,7 +846,7 @@
   }
 
   function shareOnX() {
-    const loss = currentResult ? '$' + formatNum(currentResult.totalLossUsd) : '?';
+    const loss = currentResult ? '$' + formatNum(currentResult.estimatedLoss) : '?';
     const text = `MEV bots extracted ${loss} from this wallet in the last year.\n\nCheck yours: https://mev-checker.vercel.app\n\nby @privana_finance`;
     window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
   }
