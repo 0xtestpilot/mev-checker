@@ -846,9 +846,19 @@
   }
 
   function shareOnX() {
-    const loss = currentResult ? '$' + formatNum(currentResult.estimatedLoss) : '?';
-    const text = `MEV bots extracted ${loss} from this wallet in the last year.\n\nCheck yours: https://mev-checker.vercel.app\n\nby @privana_finance`;
-    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+    if (!currentResult) return;
+    const loss = '$' + formatNum(currentResult.estimatedLoss);
+    const params = new URLSearchParams({
+      loss,
+      trades: currentResult.dexTrades || '0',
+      volume: '$' + shortNum(currentResult.dexVolume || 0),
+      incidents: currentResult.incidents || '0',
+      sandwichVol: '$' + shortNum(currentResult.sandwichVolume || 0),
+      confirmed: currentResult.type === 'confirmed' ? '1' : '0',
+    });
+    const shareUrl = 'https://mev-checker.xyz/api/share?' + params.toString();
+    const text = `MEV bots took ${loss} from my wallet in the last year.\n\nCheck yours:`;
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(shareUrl), '_blank');
   }
 
   async function copyImage() {
