@@ -140,8 +140,8 @@ module.exports = async function handler(req, res) {
       if (!tx.to) return false;
       const ts = tx.metadata?.blockTimestamp;
       if (ts && ts < oneYearAgo) return false;
-      // Known router OR detected contract
-      return DEX_ROUTERS.has(tx.to.toLowerCase()) || tx._isContract;
+      // Known router only
+      return DEX_ROUTERS.has(tx.to.toLowerCase());
     });
 
     // Collect unique ERC20 contract addresses
